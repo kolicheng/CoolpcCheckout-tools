@@ -524,14 +524,39 @@ GuiClose:
 
 ;==================快捷鍵說明模組功能==================
 ^+H::
-    CoordMode, ToolTip
-    ToolTip, 結帳：        Psuse`r列印發票：ScrollLock`r帶客訂單：Insert`r複製銷單：Ctrl+Shift+C`r緊急停止：F8`r`r提示介面五秒自動消失
-    Sleep % 10000
-    ToolTip
+    ; 檢查視窗是否已經存在，如果存在就顯示
+    IfWinExist, 熱鍵說明
+        Gui, Show
+    Else
+    {
+        ; 建立一個新視窗來顯示說明
+        Gui, Add, Text, x10 y10, 結帳
+        Gui, Add, Text, x120 y10, Psuse
+        Gui, Add, Text, x10 y30, 直接列印發票
+        Gui, Add, Text, x120 y30, Ctrl+Shift+C
+        Gui, Add, Text, x10 y50, 帶客訂單
+        Gui, Add, Text, x120 y50, Insert
+        Gui, Add, Text, x10 y70, 複製銷單
+        Gui, Add, Text, x120 y70, ScrollLock
+        Gui, Add, Text, x10 y90, 緊急停止
+        Gui, Add, Text, x120 y90, F8
+        Gui, Add, Text, x10 y110, 快速輸入
+        Gui, Add, Text, x120 y110, Ctrl+E
+        Gui, Add, Text, x10 y130, 快捷鍵說明
+        Gui, Add, Text, x120 y130, Ctrl+Shift+H
+        Gui, Add, Button, x10 y160 w200 h30 gGuiClose, 關閉
+        Gui, Show, , 熱鍵說明
+    }
     Return
 
 ;==================緊急停止功能模組==================
 F8::
+    Gui, Destroy
+    MsgBox, 4624, 結帳小工具, 手動取消
+    reload
+    Return
+
+Escape::
     Gui, Destroy
     MsgBox, 4624, 結帳小工具, 手動取消
     reload
