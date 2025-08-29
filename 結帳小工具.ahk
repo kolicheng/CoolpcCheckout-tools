@@ -6,18 +6,18 @@ Insert::
     __text := ""
     OutputVar := ""
     InputBox, __textFormatTime, %__title%, %__text%,, 200, 100,,,,, %OutputVar%
-    if (ErrorLevel = 1) {
+    If (ErrorLevel = 1) {
         Gosub, stop
     }
     inputI := StrLen(__textFormatTime)
-    if (inputI = 4) {
+    If (inputI = 4) {
         FormatTime, OutputVar,,yyyyMMdd
         inputH = %OutputVar%%__textFormatTime%
     }
-    else if (inputI = 12) {
+    Else If (inputI = 12) {
         inputH = %__textFormatTime%
     }
-    else {
+    Else {
         Gosub, stop
     }
 	
@@ -25,21 +25,21 @@ Insert::
     Gosub, gosales1
     Gosub, main1
 	
-    WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+    WinWait, ahk_class ThunderRT6MDIform, 銷貨單
     Loop {
         Sleep % 100
-        WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
+        WinGetText, OutputVar , ahk_class ThunderRT6MDIform, 銷貨單
         control = %OutputVar%
-        if (control != 銷貨單) {
+        If (control != 銷貨單) {
             Sleep % 100
-            ControlFocus, Edit36, ahk_class ThunderRT6MDIForm
+            ControlFocus, Edit36, ahk_class ThunderRT6MDIform
             Sleep % 100
-            ControlSetText , Edit36,, ahk_class ThunderRT6MDIForm
+            ControlSetText , Edit36,, ahk_class ThunderRT6MDIform
             Sleep % 100
-            Control, EditPaste, %inputH%, Edit36, ahk_class ThunderRT6MDIForm
+            Control, EditPaste, %inputH%, Edit36, ahk_class ThunderRT6MDIform
             Sleep % 100
-            ControlSend, Edit36, {Enter}, ahk_class ThunderRT6MDIForm
-            break
+            ControlSend, Edit36, {Enter}, ahk_class ThunderRT6MDIform
+            Break
         }
     }
 
@@ -48,10 +48,10 @@ Insert::
         Sleep % 100
         ControlGetFocus, focused_control, ahk_class ThunderRT6FormDC, 區域選取
         control = %focused_control%
-        if (control != TG70.ApexGridOleDB32.202) {
+        If (control != TG70.ApexGridOleDB32.202) {
             Sleep % 100
             Send, {F9}
-            break
+            Break
         }
     }
 
@@ -67,10 +67,10 @@ Pause::
     __title := "開發票-實收金額"
     __text := ""
     InputBox, inputE,%__title%,%__text%,,200,100
-    if (ErrorLevel = 1) {
+    If (ErrorLevel = 1) {
         Gosub, stop
     }
-    ControlGetText, OutputVar , Edit84, ahk_class ThunderRT6MDIForm, 銷貨單
+    ControlGetText, OutputVar , Edit84, ahk_class ThunderRT6MDIform, 銷貨單
     A := inputE
     B := StrReplace(OutputVar, "," )
     Var := A - B
@@ -80,7 +80,7 @@ Pause::
         __title := "請輸入載具號碼"
         __text := ""
         InputBox, Haystack,%__title%,%__text%,,200,100
-        if (ErrorLevel = 1) {
+        If (ErrorLevel = 1) {
             Gosub, stop
         }
         inputA := Haystack
@@ -88,25 +88,25 @@ Pause::
         If InStr( inputA, Needle){
             inputA := Haystack
         }
-        else {
+        Else {
             Gosub, stop
         }
     }
-    else {
+    Else {
         inputA := ""
     }
 
     __title := "請輸入統一編號"
     __text := ""
     InputBox, __invoice,%__title%,%__text%,,200,100
-    if (ErrorLevel = 1) {
+    If (ErrorLevel = 1) {
         Gosub, stop
     }
     inputB := StrLen(__invoice)
-    if (inputB = 8 or inputB = 0) {
+    If (inputB = 8 or inputB = 0) {
         inputB := __invoice
     }
-    else {
+    Else {
         Gosub, stop
     }
     MsgBox, 260, 結帳小工具, 刷卡嗎？
@@ -115,51 +115,51 @@ Pause::
         __title := "請輸入卡號後4碼"
         __text := ""
         InputBox, inputC,%__title%,%__text%,,200,100
-        ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
-        Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
-        if (ErrorLevel = 1) {
+        ControlFocus, Edit23, ahk_class ThunderRT6MDIform
+        Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIform
+        If (ErrorLevel = 1) {
             Gosub, stop
         }
     }
-    else {
+    Else {
         inputC := ""
     }
 
     Gosub, run1
 
-    WinActivate ahk_class ThunderRT6MDIForm
-    Control, Check,, Button5, ahk_class ThunderRT6MDIForm, 銷貨單
+    WinActivate ahk_class ThunderRT6MDIform
+    Control, Check,, Button5, ahk_class ThunderRT6MDIform, 銷貨單
     ToolTip, 發票視窗開啟中..., 900, 300
     WinWait, ahk_class ThunderRT6FormDC, 重載貨單明細
     WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 重載貨單明細
     control = %OutputVar%
-    while (control := "重載貨單明細") {
+    While (control := "重載貨單明細") {
         ToolTip, 等待發票號碼產生中..., 900, 300
         SetControlDelay 0
         ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
-        loop {
+        Loop {
             ControlGetText, OutputVar, Edit5, ahk_class ThunderRT6FormDC
-            if StrLen(OutputVar) = 0 {
+            If StrLen(OutputVar) = 0 {
                 Sleep, 1000
-                continue
+                Continue
             }
-            else {
+            Else {
                 ControlGetText, OutputVarEdit48, Edit48, ahk_class ThunderRT6FormDC
-                if StrLen(OutputVarEdit48) = 0 {
+                If StrLen(OutputVarEdit48) = 0 {
                     Control, EditPaste, %inputA%, Edit48, ahk_class ThunderRT6FormDC
                 }
                 ControlGetText, OutputVaredit2, Edit2, ahk_class ThunderRT6FormDC
-                if StrLen(OutputVaredit2) = 0 {
+                If StrLen(OutputVaredit2) = 0 {
                     Control, EditPaste, %inputB%, Edit2, ahk_class ThunderRT6FormDC
                 }
                 ControlGetText, OutputVarEdit14, Edit14, ahk_class ThunderRT6FormDC
-                if (OutputVarEdit14 = "") {
+                If (OutputVarEdit14 = "") {
                     Control, EditPaste, %inputC%%A_Space%, Edit14, ahk_class ThunderRT6FormDC
                 }
-                break
+                Break
             }
         }
-        break
+        Break
     }
 
     Sleep % 100
@@ -171,7 +171,7 @@ Pause::
     Gosub, Print
     Gosub, slip
 
-    ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
+    ControlFocus, Edit52, ahk_class ThunderRT6MDIform
     Send, {Enter}
 
     Gosub, stoptip
@@ -183,18 +183,18 @@ Pause::
     __text := ""
     OutputVar := ""
     InputBox, __textFormatTime, %__title%, %__text%,, 200, 100,,,,, %OutputVar%
-    if (ErrorLevel = 1) {
+    If (ErrorLevel = 1) {
         Gosub, stop
     }
     inputT := StrLen(__textFormatTime)
-    if (inputT = 4) {
+    If (inputT = 4) {
         FormatTime, OutputVar,,yyyyMMdd
         inputG= %OutputVar%%__textFormatTime%
     }
-    else if (inputT = 12) {
+    Else If (inputT = 12) {
         inputG= %__textFormatTime%
     }
-    else {
+    Else {
         Gosub, stop
     }
 
@@ -207,40 +207,40 @@ Pause::
         Sleep % 100
         WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 軟體類別
         control = %OutputVar%
-        if (control != 軟體類別) {
+        If (control != 軟體類別) {
             Sleep % 100
             ControlSetText , Edit22, %    /  /  , ahk_class ThunderRT6FormDC
             Sleep % 100
             Control, EditPaste, %inputG%, Edit24, ahk_class ThunderRT6FormDC
-            Sleep % 100
+            Sleep % 1001000ㄣ
             Control, EditPaste, %inputG%, Edit25, ahk_class ThunderRT6FormDC
             Sleep % 100
             Send, {F9}
-            break
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     
     }
     Gosub, slip
 
-    ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
+    ControlFocus, Edit23, ahk_class ThunderRT6MDIform
     ToolTip, 銷貨單視窗確認中..., 900, 300
-    loop {
+    Loop {
         WinGetText,Str,A
         Haystack := Str
         Needle := "銷貨單"
         Atr := InStr(Haystack, Needle)
-        if (Atr = 1) {
+        If (Atr = 1) {
             Sleep % 100
             Send,{F7}
             Sleep % 100
-            break
+            Break
         }
-        else{
+        Else{
             ToolTip, 等待銷單視窗開啟中...., 900, 300
-            break
+            Break
         }
     }
     
@@ -257,24 +257,24 @@ ScrollLock::
     __text := ""
     OutputVar := ""
     InputBox, __textFormatTime, %__title%, %__text%,, 200, 100,,,,, %OutputVar%
-    if (ErrorLevel = 1) {
+    If (ErrorLevel = 1) {
         Gosub, stop
     }
     inputT := StrLen(__textFormatTime)
-    if (inputT = 4) {
+    If (inputT = 4) {
         FormatTime, OutputVar,,yyyyMMdd
         inputR = %OutputVar%%__textFormatTime%
     }
-    else if (inputT = 12) {
+    Else If (inputT = 12) {
         inputR = %__textFormatTime%
     }
-    else {
+    Else {
         Gosub, stop
     }
 
     Gosub, run1
 
-    WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+    WinWait, ahk_class ThunderRT6MDIform, 銷貨單
 
     Gosub, gosales
     Gosub, find
@@ -284,7 +284,7 @@ ScrollLock::
         Sleep % 100
         WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 軟體類別
         control = %OutputVar%
-        if (control != 軟體類別) {
+        If (control != 軟體類別) {
             Sleep % 100
             ControlSetText , Edit22, %    /  /  , ahk_class ThunderRT6FormDC
             Sleep % 100
@@ -293,26 +293,26 @@ ScrollLock::
             Control, EditPaste, %inputR%, Edit25, ahk_class ThunderRT6FormDC
             Sleep % 100
             Send, {F9}
-            break
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     }
 
-    ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
+    ControlFocus, Edit23, ahk_class ThunderRT6MDIform
 
     Gosub, slip
     Gosub, main1
 
     Loop {
         Sleep % 100
-        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm, 銷貨單
+        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIform, 銷貨單
         control = %OutputVar%
-        if (control = 1) {
+        If (control = 1) {
             Sleep % 100
             Send, !C
-            break
+            Break
         }
     }
 
@@ -322,7 +322,7 @@ ScrollLock::
         Sleep % 100
         WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 產生單據日期
         control = %OutputVar%
-        if (control != 產生單據日期) {
+        If (control != 產生單據日期) {
             Sleep % 100
             SetControlDelay -1
             ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
@@ -330,7 +330,7 @@ ScrollLock::
             Control, EditPaste, %inputR%, Edit3, ahk_class ThunderRT6FormDC
             Sleep % 100
             Control, Check,, Button1, ahk_class ThunderRT6FormDC
-            break
+            Break
         }
     }
 
@@ -340,7 +340,7 @@ ScrollLock::
         Sleep % 100
         PixelGetColor, color, 468, 331 , Alt
         control = %color%
-        if (control = 0xD77800) {
+        If (control = 0xD77800) {
             Sleep % 100
             CoordMode, Mouse , Screen
             __ClickX:=524
@@ -350,7 +350,7 @@ ScrollLock::
             Sleep % 100
             Send, {F9}
             Sleep % 100
-            break
+            Break
         }
     }
 
@@ -360,53 +360,53 @@ ScrollLock::
         Sleep % 100
         ControlGetFocus, focused_control, ahk_class ThunderRT6FormDC, 區域選取
         control = %focused_control%
-        if (control != TG70.ApexGridOleDB32.202) {
+        If (control != TG70.ApexGridOleDB32.202) {
             Sleep % 100
             Send, {F9}
-            break
+            Break
         }
     }
 
-    WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+    WinWait, ahk_class ThunderRT6MDIform, 銷貨單
 
     Loop {
-        WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
+        WinGetText, OutputVar , ahk_class ThunderRT6MDIform, 銷貨單
         control = %OutputVar%
-        if (control != 銷貨單) {
-            ControlGetText, OutputVarmark, Edit38, ahk_class ThunderRT6MDIForm
-            ControlGetText, OutputVarsales1, Edit22, ahk_class ThunderRT6MDIForm
-            ControlGetText, OutputVarsales2, Edit23, ahk_class ThunderRT6MDIForm
+        If (control != 銷貨單) {
+            ControlGetText, OutputVarmark, Edit38, ahk_class ThunderRT6MDIform
+            ControlGetText, OutputVarsales1, Edit22, ahk_class ThunderRT6MDIform
+            ControlGetText, OutputVarsales2, Edit23, ahk_class ThunderRT6MDIform
             EnvSet, mark, %OutputVarmark%
             EnvSet, sales1, %OutputVarsales1%
             EnvSet, sales2, %OutputVarsales2%
             Gosub, markname
             Sleep % 1000
         }
-        break
+        Break
     }
 
-    WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+    WinWait, ahk_class ThunderRT6MDIform, 銷貨單
 
     Loop {
-        WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
+        WinGetText, OutputVar , ahk_class ThunderRT6MDIform, 銷貨單
         control = %OutputVar%
-        if (control != 銷貨單) {
+        If (control != 銷貨單) {
             Sleep % 1000
             Gosub, Salesname
         }
-        break
+        Break
     }
 
-    WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+    WinWait, ahk_class ThunderRT6MDIform, 銷貨單
 
     Loop {
         Sleep % 100
-        WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
+        WinGetText, OutputVar , ahk_class ThunderRT6MDIform, 銷貨單
         control = %OutputVar%
-        if (control != 銷貨單) {
+        If (control != 銷貨單) {
             Sleep % 100
-            Control, EditPaste, 原銷單%inputR%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm, 銷貨單
-            break
+            Control, EditPaste, 原銷單%inputR%%A_Space%, Edit30, ahk_class ThunderRT6MDIform, 銷貨單
+            Break
         }
     }
 
@@ -427,7 +427,7 @@ ScrollLock::
 ;==================快捷鍵說明模組功能==================
 ^+H::
     CoordMode, ToolTip
-    ToolTip, 結帳：        Psuse`r列印發票：ScrollLock`r帶客訂單：Insert`r複製銷單：Ctrl+Shift+C`r緊急停止：F8`r`r提示介面五秒自動消失
+    ToolTip, 結帳：        Psuse`r列印發票：ScrollLock`r帶客訂單：Insert`r複製銷單：Ctrl+ShIft+C`r緊急停止：F8`r`r提示介面五秒自動消失
     Sleep % 10000
     ToolTip
     Return
@@ -494,14 +494,14 @@ UpdateOSD:
 Salesname:
     EnvGet, OutputVar2, sales1
     EnvGet, OutputVar3, sales2
-    loop {
-        ControlGetFocus, OutputVar , ahk_class ThunderRT6MDIForm
-        if (OutputVar := "Edit27") {
-            ControlSetText , Edit22, %OutputVar2%, ahk_class ThunderRT6MDIForm
-            ControlSetText , Edit23, %OutputVar3%, ahk_class ThunderRT6MDIForm
-            break
+    Loop {
+        ControlGetFocus, OutputVar , ahk_class ThunderRT6MDIform
+        If (OutputVar := "Edit27") {
+            ControlSetText , Edit22, %OutputVar2%, ahk_class ThunderRT6MDIform
+            ControlSetText , Edit23, %OutputVar3%, ahk_class ThunderRT6MDIform
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     }
@@ -518,25 +518,25 @@ Markname:
     Needlek1 := "5X01"
     Needlem1 := "V5001"
 
-    if InStr(OutputVar1, Needlep1) {
-        ControlClick, Edit38, ahk_class ThunderRT6MDIForm,,,, NA
-        ControlSetText, Edit38,, ahk_class ThunderRT6MDIForm
-        ControlSendRaw, Edit38, 308`n, ahk_class ThunderRT6MDIForm
+    If InStr(OutputVar1, Needlep1) {
+        ControlClick, Edit38, ahk_class ThunderRT6MDIform,,,, NA
+        ControlSetText, Edit38,, ahk_class ThunderRT6MDIform
+        ControlSendRaw, Edit38, 308`n, ahk_class ThunderRT6MDIform
     }
-    else if InStr(OutputVar1, Needlep2) {
-        ControlClick, Edit38, ahk_class ThunderRT6MDIForm,,,, NA
-        ControlSetText, Edit38,, ahk_class ThunderRT6MDIForm
-        ControlSendRaw, Edit38, 312`n, ahk_class ThunderRT6MDIForm
+    Else If InStr(OutputVar1, Needlep2) {
+        ControlClick, Edit38, ahk_class ThunderRT6MDIform,,,, NA
+        ControlSetText, Edit38,, ahk_class ThunderRT6MDIform
+        ControlSendRaw, Edit38, 312`n, ahk_class ThunderRT6MDIform
     }
-    else if InStr(OutputVar1, Needlek1) {
-        ControlClick, Edit38, ahk_class ThunderRT6MDIForm,,,, NA
-        ControlSetText, Edit38,, ahk_class ThunderRT6MDIForm
-        ControlSendRaw, Edit38, 352`n, ahk_class ThunderRT6MDIForm
+    Else If InStr(OutputVar1, Needlek1) {
+        ControlClick, Edit38, ahk_class ThunderRT6MDIform,,,, NA
+        ControlSetText, Edit38,, ahk_class ThunderRT6MDIform
+        ControlSendRaw, Edit38, 352`n, ahk_class ThunderRT6MDIform
     }
-    else if InStr(OutputVar1, Needlem1) {
-        ControlClick, Edit38, ahk_class ThunderRT6MDIForm,,,, NA
-        ControlSetText, Edit38,, ahk_class ThunderRT6MDIForm
-        ControlSendRaw, Edit38, 394`n, ahk_class ThunderRT6MDIForm
+    Else If InStr(OutputVar1, Needlem1) {
+        ControlClick, Edit38, ahk_class ThunderRT6MDIform,,,, NA
+        ControlSetText, Edit38,, ahk_class ThunderRT6MDIform
+        ControlSendRaw, Edit38, 394`n, ahk_class ThunderRT6MDIform
     }
 
     EnvSet, mark
@@ -546,36 +546,36 @@ Markname:
 ;==================打開銷貨單模組（打開其他視窗情況）==================
 gosales1:
     ToolTip, 確認銷單視窗中..., 900, 300
-    WinActivate ahk_class ThunderRT6MDIForm
-    WinWait, ahk_class ThunderRT6MDIForm
-    loop {
+    WinActivate ahk_class ThunderRT6MDIform
+    WinWait, ahk_class ThunderRT6MDIform
+    Loop {
         WinGetText,Str,A
         Haystack := Str
         Needle := "銷貨單"
         Atr := InStr(Haystack, Needle)
-        if (Atr = 1) {
-            break
+        If (Atr = 1) {
+            Break
         }
-        else {
+        Else {
             ToolTip, 重新開啟銷單畫面中....., 900, 300
             WinGetText,Str,A
             Haystack := Str
             Needle := "功能快捷視窗"
             Atr := InStr(Haystack, Needle)
-            while not (Atr = 1) {
+            While not (Atr = 1) {
                 Sleep % 100
                 Send, {F12}
                 Sleep % 100
-                break
+                Break
             }
             WinGetText,Str,A
             Haystack := Str
             Needle := "銷貨單"
             Atr1 := InStr(Haystack, Needle)
-            while not (Atr1 = 1) {
+            While not (Atr1 = 1) {
                 Sleep % 100
                 Send, {F10}l11
-                break
+                Break
             }
         }
     }
@@ -586,53 +586,53 @@ gosales1:
 ;==================打開銷貨單模組（未打開情況）==================
 gosales:
     ToolTip, 打開銷單視窗中..., 900, 300
-    WinActivate ahk_class ThunderRT6MDIForm
-    WinWait, ahk_class ThunderRT6MDIForm
-    loop {
+    WinActivate ahk_class ThunderRT6MDIform
+    WinWait, ahk_class ThunderRT6MDIform
+    Loop {
 		WinGetText,Str,A
 		Haystack := Str
 		Needle := "銷貨單"
 		Atr := InStr(Haystack, Needle)
-		if (Atr = 1) {
+		If (Atr = 1) {
 			ToolTip, 等待銷單為退出狀態中...., 900, 300
 			Loop {
-				ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
-				if (OutputVar = 1) {
+				ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIform
+				If (OutputVar = 1) {
 					Sleep % 100
 					Send,{Esc}
 					Sleep % 500
 					Gosub, confirm
-					break
+					Break
 				}
-				else {
+				Else {
 					ToolTip, 銷貨單等待目標視窗錯誤，請手動切換或是重新流程！, 900, 300
-					break
+					Break
 				}
 			}
-			break
+			Break
 		}
-		else {
+		Else {
 			ToolTip, 重新開啟銷單畫面中....., 900, 300
 			WinGetText,Str,A
 			Haystack := Str
 			Needle := "功能快捷視窗"
 			Atr := InStr(Haystack, Needle)
-			while not (Atr = 1) {
+			While not (Atr = 1) {
 				Sleep % 100
 				Send, {F12}
 				Sleep % 100
-				break
+				Break
 			}
 			WinGetText,Str,A
 			Haystack := Str
 			Needle := "銷貨單"
 			Atr1 := InStr(Haystack, Needle)
-			while not (Atr1 = 1) {
+			While not (Atr1 = 1) {
 				Sleep % 100
 				Send, {F10}l11
-				break
+				Break
 			}
-			continue
+			Continue
 		}
     }
 	
@@ -652,38 +652,38 @@ stop:
 main1:
     Gosub, slip
     ToolTip, 判斷銷貨單為新增狀態中..., 900, 300
-    loop {
+    Loop {
         ToolTip, 等待銷單為新增狀態中...., 900, 300
-        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
-        if (OutputVar = 0) {
+        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIform
+        If (OutputVar = 0) {
             Sleep % 100
             Send,{F2}
-            break
+            Break
         }
-        else {
-            loop {
-                ControlGetText, OutputVar, Edit36, ahk_class ThunderRT6MDIForm
-                if StrLen(OutputVar) = 0 {
-                    break
+        Else {
+            Loop {
+                ControlGetText, OutputVar, Edit36, ahk_class ThunderRT6MDIform
+                If StrLen(OutputVar) = 0 {
+                    Break
                 }
-                else {
+                Else {
                     ToolTip, 等待銷單為退出狀態中...., 900, 300
                     Gosub, main2
                     Gosub, confirm
                     Gosub, slip
                     ToolTip, 等待銷單為新增狀態中...., 900, 300
-                    loop {
-                        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
-                        if (OutputVar = 0) {
+                    Loop {
+                        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIform
+                        If (OutputVar = 0) {
                             Sleep % 100
                             Send,{F2}
-                             break
+                             Break
                         }
                     }
                 }
             }
         }
-        break
+        Break
     }
 
     ToolTip, 銷單新增完成, 900, 300
@@ -695,29 +695,31 @@ main2:
     Gosub, slip
     ToolTip, 判斷銷貨單為退出狀態中..., 900, 300
     Loop {
-    ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
-    if (OutputVar = 1) {
-    loop {
-    WinGetText,Str,A
-    Haystack := Str
-    Needle := "銷貨單"
-    Atr := InStr(Haystack, Needle)
-    if (Atr = 1) {
-    Sleep % 100
-    Send,{Esc}
-    Sleep % 500
-    break
+        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIform
+        If (OutputVar = 1) {
+            Loop {
+                WinGetText,Str,A
+                Haystack := Str
+                Needle := "銷貨單"
+                Atr := InStr(Haystack, Needle)
+                If (Atr = 1) {
+                    Sleep % 100
+                    Send,{Esc}
+                    Sleep % 500
+                    Break
+                }
+                Else{
+                    Sleep % 100
+                    ToolTip, 等待銷單為退出狀態中...., 900, 300
+                    Break
+                }
+            }
+        }
+        Break
     }
-    else{
-    Sleep % 100
-    ToolTip, 等待銷單為退出狀態中...., 900, 300
-    break
-    }
-    }
-    }
-    break
-    }
+
     ToolTip, 銷單退出完成, 900, 300
+
     Return
 
 ;==================提示視窗功能（執行中）==================
@@ -737,35 +739,33 @@ stoptip:
 ;==================判斷銷單狀態==================
 slip:
     ToolTip, 銷貨單視窗確認中..., 900, 300
-    loop {
+    Loop {
         WinGet, ActiveWindowID, ID, A
         WinGetText, VisibleText, ahk_id %ActiveWindowID%
-        if (SubStr(VisibleText, 1, 3) = "銷貨單")
-    {
-    break
-    }
-    else
-    {
-    ToolTip, 等待銷單視窗開啟中...., 900, 300
-    Sleep % 100
-    }
+        If (SubStr(VisibleText, 1, 3) = "銷貨單") {
+            Break
+        }
+        Else {
+            ToolTip, 等待銷單視窗開啟中...., 900, 300
+            Sleep % 100
+        
     }
     Return
 
 ;==================判斷銷單狀態（判斷詳查視窗）==================
 find:
     Gosub, slip
-    ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
+    ControlFocus, Edit23, ahk_class ThunderRT6MDIform
     ToolTip, 詳查視窗載入中..., 900, 300
     WinGetText,Str,A
     Haystack := Str
     Needle := " 審核確認"
     Atr := InStr(Haystack, Needle)
-    while not (Atr = 1) {
+    While not (Atr = 1) {
         Sleep % 100
         Send,{F5}
         Sleep % 100
-        break
+        Break
     }
 
     Return
@@ -773,17 +773,17 @@ find:
 ;==================判斷銷單狀態（發票視窗）==================
 receipt:
     ToolTip, 發票視窗開啟中..., 900, 300
-    loop {
+    Loop {
         WinGetText,Str,A
         Haystack := Str
         Needle := "多選 "
         Atr := InStr(Haystack, Needle)
-        if (Atr = 1) {
-            break
+        If (Atr = 1) {
+            Break
         }
-        else{
+        Else{
             ToolTip, 等待發票視窗開啟中....., 900, 300
-            break
+            Break
         }
     }
     Return
@@ -791,17 +791,17 @@ receipt:
 ;==================判斷銷單狀態（載入中）==================
 load:
     ToolTip, 客訂單載入中..., 900, 300
-    loop {
+    Loop {
         WinGetText,Str,A
         Haystack := Str
         Needle := "▼"
         Atr := InStr(Haystack, Needle)
-        if (Atr = 1) {
-            break
+        If (Atr = 1) {
+            Break
         }   
-        else{
+        Else{
             ToolTip, 等待客訂單載入畫面中...., 900, 300
-            break
+            Break
         }
     }
     Return
@@ -809,20 +809,20 @@ load:
 ;==================判斷銷單狀態（確認中）==================
 confirm:
     ToolTip, 等待確認視窗中..., 900, 300
-    loop {
+    Loop {
         WinGetText,Str,A
         Haystack := Str
         Needle := "確定"
         Atr := InStr(Haystack, Needle)
-        if (Atr = 1) {
+        If (Atr = 1) {
             Sleep % 100
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton1, ahk_class ThunderRT6FormDC ,確定,,, NA
-        break
+        Break
         }
-        else{
+        Else{
             Sleep % 100
-            continue
+            Continue
         }
     }
 
@@ -836,23 +836,23 @@ Print:
 
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6PictureBoxDC1, A
-        if (OutputVar = 1) {
+        If (OutputVar = 1) {
             Send,{Esc}
-            break
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     }
 
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6CommandButton6, A
-        if (OutputVar = 1) {
+        If (OutputVar = 1) {
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton6, ahk_class ThunderRT6FormDC,,,, NA
-            break
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     }
@@ -865,35 +865,35 @@ Print1:
     ToolTip, 列印發票中..., 900, 300
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6CommandButton6, A
-        if (OutputVar = 1) {
+        If (OutputVar = 1) {
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton6, ahk_class ThunderRT6FormDC,,,, NA
-            break
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     }
 
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6PictureBoxDC1, A
-        if (OutputVar = 1) {
+        If (OutputVar = 1) {
             Send,{Esc}
-            break
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     }
 
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6CommandButton1, A
-        if (OutputVar = 1) {
+        If (OutputVar = 1) {
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton1, ahk_class ThunderRT6FormDC,,,, NA
-            break
+            Break
         }
-        else {
+        Else {
             Sleep % 100
         }
     }
