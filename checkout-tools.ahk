@@ -690,29 +690,31 @@ main2:
     Gosub, slip
     ToolTip, 判斷銷貨單為退出狀態中..., 900, 300
     Loop {
-    ControlGet, OutputVar, Visible,, Edit86, ahk_class ThunderRT6MDIForm
-    if (OutputVar = 1) {
-    loop {
-    WinGetText,Str,A
-    Haystack := Str
-    Needle := "銷貨單"
-    Atr := InStr(Haystack, Needle)
-    if (Atr = 1) {
-    Sleep % 100
-    Send,{Esc}
-    Sleep % 500
-    break
+        ControlGet, OutputVar, Visible,, Edit86, ahk_class ThunderRT6MDIForm
+        if (OutputVar = 1) {
+            loop {
+                WinGetText,Str,A
+                Haystack := Str
+                Needle := "銷貨單"
+                Atr := InStr(Haystack, Needle)
+                if (Atr = 1) {
+                    Sleep % 100
+                    Send,{Esc}
+                    Sleep % 500
+                    break
+                }
+                else{
+                    Sleep % 100
+                    ToolTip, 等待銷單為退出狀態中...., 900, 300
+                    break
+                }
+            }
+        }
+        break
     }
-    else{
-    Sleep % 100
-    ToolTip, 等待銷單為退出狀態中...., 900, 300
-    break
-    }
-    }
-    }
-    break
-    }
+
     ToolTip, 銷單退出完成, 900, 300
+    
     Return
 
 ;==================提示視窗功能（執行中）==================
@@ -1031,5 +1033,5 @@ Print1:
     }
 
     ToolTip, 開啟銷單完成, 900, 300
-    
+
     Return
