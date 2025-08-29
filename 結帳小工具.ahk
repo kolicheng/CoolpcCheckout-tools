@@ -1,5 +1,5 @@
 ;====================熱鍵定義區塊====================
-
+; 先設定預設值
 Hotkey_結帳 = Pause
 Hotkey_帶入客訂單 = Insert
 Hotkey_直接列印發票 = ^+C
@@ -8,6 +8,18 @@ Hotkey_緊急停止 = F8
 Hotkey_快速輸入 = ^E
 Hotkey_快捷鍵說明 = ^+H
 Hotkey_修改熱鍵 = ^+G
+
+; 讀取設定檔
+if FileExist("Hotkeys.ini") {
+    IniRead, Hotkey_結帳, Hotkeys.ini, Hotkeys, 結帳
+    IniRead, Hotkey_帶入客訂單, Hotkeys.ini, Hotkeys, 帶入客訂單
+    IniRead, Hotkey_直接列印發票, Hotkeys.ini, Hotkeys, 直接列印發票
+    IniRead, Hotkey_複製銷單, Hotkeys.ini, Hotkeys, 複製銷單
+    IniRead, Hotkey_緊急停止, Hotkeys.ini, Hotkeys, 緊急停止
+    IniRead, Hotkey_快速輸入, Hotkeys.ini, Hotkeys, 快速輸入
+    IniRead, Hotkey_快捷鍵說明, Hotkeys.ini, Hotkeys, 快捷鍵說明
+    IniRead, Hotkey_修改熱鍵, Hotkeys.ini, Hotkeys, 修改熱鍵
+}
 
 ;====================啟動熱鍵區塊====================
 
@@ -23,8 +35,19 @@ Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
 Gosub, Label_快捷鍵說明
 return
 
+;==================全局變數區塊==================
+; 設定一個「開關」，用於防止多個功能同時執行。
+is_running_flag := 0
+
 ;==================帶入客訂單功能模組==================
 Label_帶入客訂單:
+	; 檢查開關，如果正在執行中，就立即停止。
+	if is_running_flag {
+		Return
+	}
+	; 打開開關，表示功能正在執行。
+	is_running_flag := 1
+
 	Gui, Destroy
 
 	__title := "帶單-後4碼/完整8碼"
@@ -81,11 +104,20 @@ Label_帶入客訂單:
 	}
 
 	Gosub, stoptip
-
+	
+	; 關閉開關，表示功能執行完畢。
+	is_running_flag := 0
 	Return
 
 ;==================開發票結帳功能模組==================
 Label_結帳:
+	; 檢查開關，如果正在執行中，就立即停止。
+	if is_running_flag {
+		Return
+	}
+	; 打開開關，表示功能正在執行。
+	is_running_flag := 1
+	
 	Gui, Destroy
 	Gosub Finalcheck
 
@@ -200,10 +232,24 @@ Label_結帳:
 	Send, {Enter}
 
 	Gosub, stoptip
+
+	; 關閉 OSD 視窗並停止更新
+	Gui, Destroy
+	SetTimer, UpdateOSD, Off
+
+	; 關閉開關，表示功能執行完畢。
+	is_running_flag := 0
 	Return
 
 ;==================直接列印發票功能模組==================
 Label_直接列印發票:
+	; 檢查開關，如果正在執行中，就立即停止。
+	if is_running_flag {
+		Return
+	}
+	; 打開開關，表示功能正在執行。
+	is_running_flag := 1
+	
 	__title := "列印-輸入銷單後四碼"
 	__text := ""
 	OutputVar := ""
@@ -271,11 +317,20 @@ Label_直接列印發票:
 
 	Gosub, Print1
 	Gosub, stoptip
-
+	
+	; 關閉開關，表示功能執行完畢。
+	is_running_flag := 0
 	Return
 
 ;==================拷貝銷單功能模組==================
 Label_複製銷單:
+	; 檢查開關，如果正在執行中，就立即停止。
+	if is_running_flag {
+		Return
+	}
+	; 打開開關，表示功能正在執行。
+	is_running_flag := 1
+	
 	Gui, Destroy
 
 	__title := "拷貝-銷單後4碼或完整8碼"
@@ -436,10 +491,20 @@ Label_複製銷單:
 	}
 
 	Gosub, stoptip
+
+	; 關閉開關，表示功能執行完畢。
+	is_running_flag := 0
 	Return
 
 ;==================文字輸入快捷鍵模組功能==================
 Label_快速輸入:
+	; 檢查開關，如果正在執行中，就立即停止。
+	if is_running_flag {
+		Return
+	}
+	; 打開開關，表示功能正在執行。
+	is_running_flag := 1
+	
 	; 檢查檔案是否存在
 	IfNotExist, text_options.txt
 	{
@@ -463,10 +528,13 @@ Label_快速輸入:
 		Return ; 結束
 	}
 	; 如果檔案存在，就顯示GUI選單
-	GoSub, GoTextGui
+	GoSub, Label_GoTextGui
+
+	; 關閉開關，表示功能執行完畢。
+	is_running_flag := 0
 	Return
 
-GoTextGui:
+Label_GoTextGui:
 	; 如果視窗已經存在就關閉它，以便重新整理
 	IfWinExist, 文字快捷選單
 		Gui, Destroy
@@ -479,50 +547,47 @@ GoTextGui:
 	y_pos := 30
 	Loop, read, text_options.txt
 	{
-		Gui, Add, Button, x10 y%y_pos% w200 h30 gGoText, %A_LoopReadLine%
+		Gui, Add, Button, x10 y%y_pos% w200 h30 gLabel_GoText, %A_LoopReadLine%
 		y_pos += 40
 	}
 
 	; 加入重新整理、編輯、新增和關閉按鈕
-	Gui, Add, Button, x10 y%y_pos% w60 h30 gGoAdd, 新增
-	Gui, Add, Button, x80 y%y_pos% w60 h30 gGoEdit, 編輯
-	Gui, Add, Button, x150 y%y_pos% w60 h30 gGoTextGui, 重新整理
-	Gui, Add, Button, x220 y%y_pos% w60 h30 gGuiClose, 關閉
+	Gui, Add, Button, x10 y%y_pos% w60 h30 gLabel_GoAdd, 新增
+	Gui, Add, Button, x80 y%y_pos% w60 h30 gLabel_GoEdit, 編輯
+	Gui, Add, Button, x150 y%y_pos% w60 h30 gLabel_GoTextGui, 重新整理
+	Gui, Add, Button, x220 y%y_pos% w60 h30 gLabel_GuiClose, 關閉
 	Gui, Show, , 文字快捷選單
 	Return
 
-GoText:
+Label_GoText:
 	; 記住你點擊按鈕前的視窗
 	LastActiveWinID := WinExist("A")
 
 	; 取得你點擊的按鈕上的文字
 	ButtonText := A_GuiControl
-
 	Gui, Hide ; 隱藏選單視窗
-
 	WinActivate, ahk_id %LastActiveWinID% ; 切換回原本的視窗
 	Sleep, 100 ; 稍微等一下
-
 	Send, {Home}%ButtonText% ; 輸入文字
 	return
 
-GoEdit:
+Label_GoEdit:
 	; 自動打開記事本並帶入檔名
 	Run, notepad.exe "text_options.txt"
 	Return
 
-GoAdd:
+Label_GoAdd:
 	; 建立一個新的小視窗
 	Gui, Destroy
 	Gui, 2:Default
 	Gui, Add, Text, , 請輸入或貼上要新增的文字：
 	Gui, Add, Edit, vNewText w250 h100
-	Gui, Add, Button, gAddText w60 h30, 確定
-	Gui, Add, Button, gCloseAdd w60 h30, 取消
+	Gui, Add, Button, gLabel_AddText w60 h30, 確定
+	Gui, Add, Button, gLabel_CloseAdd w60 h30, 取消
 	Gui, Show, , 新增文字
 	return
 
-AddText:
+Label_AddText:
 	; 取得輸入的文字
 	GuiControlGet, NewText
 
@@ -534,16 +599,16 @@ AddText:
 	Gui, Destroy
 
 	; 重新整理主選單
-	GoSub, GoTextGui
+	GoSub, Label_GoTextGui
 	Return
 
-CloseAdd:
+Label_CloseAdd:
 	Gui, Destroy
-	GoSub, GoTextGui
+	GoSub, Label_GoTextGui
 	Return
 
 ; GUI關閉時的動作
-GuiClose:
+Label_GuiClose:
 	Gui, Destroy
 	Return
 
@@ -563,27 +628,30 @@ Label_快捷鍵說明:
 			; 檢查並處理修飾鍵
 			if InStr(hotkey_str, "^")
 			{
-				display_str .= "Ctrl + "
+				display_str .= "CTRL + "
 				hotkey_str := StrReplace(hotkey_str, "^")
 			}
 			
 			if InStr(hotkey_str, "+")
 			{
-				display_str .= "Shift + "
+				display_str .= "SHIFT + "
 				hotkey_str := StrReplace(hotkey_str, "+")
 			}
 			
 			if InStr(hotkey_str, "!")
 			{
-				display_str .= "Alt + "
+				display_str .= "ALT + "
 				hotkey_str := StrReplace(hotkey_str, "!")
 			}
 			
 			if InStr(hotkey_str, "#")
 			{
-				display_str .= "Win + "
+				display_str .= "WIN + "
 				hotkey_str := StrReplace(hotkey_str, "#")
 			}
+			
+			; 將剩下的主要按鍵轉成大寫
+			StringUpper, hotkey_str, hotkey_str
 			
 			; 將剩下的主要按鍵加到最後
 			display_str .= hotkey_str
@@ -604,37 +672,31 @@ Label_快捷鍵說明:
 		; 建立視窗
 		Gui, Add, Text, x10 y10, 結帳
 		Gui, Add, Text, x130 y10, %Hotkey_結帳_顯示%
-		
 		Gui, Add, Text, x10 y30, 帶入客訂單
 		Gui, Add, Text, x130 y30, %Hotkey_帶入客訂單_顯示%
-		
 		Gui, Add, Text, x10 y50, 直接列印發票
 		Gui, Add, Text, x130 y50, %Hotkey_直接列印發票_顯示%
-		
 		Gui, Add, Text, x10 y70, 複製銷單
 		Gui, Add, Text, x130 y70, %Hotkey_複製銷單_顯示%
-		
 		Gui, Add, Text, x10 y90, 緊急停止
 		Gui, Add, Text, x130 y90, %Hotkey_緊急停止_顯示%
-		
 		Gui, Add, Text, x10 y110, 快速輸入
 		Gui, Add, Text, x130 y110, %Hotkey_快速輸入_顯示%
-		
 		Gui, Add, Text, x10 y130, 快捷鍵說明
 		Gui, Add, Text, x130 y130, %Hotkey_快捷鍵說明_顯示%
-		
 		Gui, Add, Text, x10 y150, 修改熱鍵
 		Gui, Add, Text, x130 y150, %Hotkey_修改熱鍵_顯示%
-		
-		Gui, Add, Button, x10 y180 w200 h30 gGuiClose, 關閉
-		Gui, Show, w230, 結帳小工具
+		Gui, Add, Button, x10 y180 w200 h30 gLabel_GuiClose, 關閉
+		Gui, Show, w250, 結帳小工具
 	}
 	Return
 
 ;==================緊急停止功能模組==================
 Label_緊急停止:
-	Gui, Destroy
+	; 這個熱鍵是緊急停止，不受開關限制，隨時都能執行。
+	; 立即關閉所有執行中的熱鍵功能並重新啟動程式。
 	MsgBox, 4624, 結帳小工具, 手動取消，重新載入小工具
+	is_running_flag := 0
 	reload
 	Return
 
@@ -844,6 +906,8 @@ stop:
     ToolTip
     Gui, Destroy
     MsgBox, 262704, 結帳小工具, 手動取消，請重新使用熱鍵！
+	; 關閉開關，並重新載入程式。
+	is_running_flag := 0
     reload
     Return
 
@@ -1103,30 +1167,27 @@ Print1:
 	
 ;================== 熱鍵修改功能模組 ==================
 
+
 Label_修改熱鍵:
 	Gui, Destroy
 	
 	; 建立熱鍵修改視窗
 	Gui, Add, Text, , 請選擇要修改的熱鍵：
-	Gui, Add, DropDownList, vHotkeyName gUpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵
-	
+	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵
 	Gui, Add, Text, x10 y60, 目前熱鍵：
-	Gui, Add, Edit, x100 y60 w100 vCurrentHotkey ReadOnly
-	
+	Gui, Add, Edit, x100 y60 w120 vCurrentHotkey ReadOnly
 	Gui, Add, Text, x10 y90, 輸入新熱鍵：
-	Gui, Add, Hotkey, x100 y90 w100 vNewHotkey
-	
-	Gui, Add, Button, x10 y120 w80 h30 gSaveHotkey, 儲存
-	Gui, Add, Button, x100 y120 w80 h30 gGuiClose, 取消
-	
-	Gui, Show, , 修改熱鍵
+	Gui, Add, Hotkey, x100 y90 w120 vNewHotkey
+	Gui, Add, Button, x10 y120 w80 h30 gLabel_SaveHotkey, 儲存
+	Gui, Add, Button, x100 y120 w80 h30 gLabel_GuiClose, 取消
+	Gui, Show, w240, 修改熱鍵
 	
 	; 預設顯示第一個選項的熱鍵
 	GuiControl, Choose, HotkeyName, 1
-	GoSub, UpdateHotkey
+	GoSub, Label_UpdateHotkey
 	return
 
-UpdateHotkey:
+Label_UpdateHotkey:
 	Gui, Submit, NoHide
 	
 	; 根據選擇的項目，取得對應的熱鍵變數
@@ -1155,7 +1216,7 @@ UpdateHotkey:
 
 	return
 
-SaveHotkey:
+Label_SaveHotkey:
 	Gui, Submit
 	
 	if (NewHotkey = "")
@@ -1191,6 +1252,16 @@ SaveHotkey:
 		Hotkey_快捷鍵說明 := NewHotkey
 	else if (HotkeyName = "修改熱鍵")
 		Hotkey_修改熱鍵 := NewHotkey
+
+	; 將新的熱鍵設定寫入檔案
+	IniWrite, %Hotkey_結帳%, Hotkeys.ini, Hotkeys, 結帳
+	IniWrite, %Hotkey_帶入客訂單%, Hotkeys.ini, Hotkeys, 帶入客訂單
+	IniWrite, %Hotkey_直接列印發票%, Hotkeys.ini, Hotkeys, 直接列印發票
+	IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
+	IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
+	IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
+	IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
+	IniWrite, %Hotkey_修改熱鍵%, Hotkeys.ini, Hotkeys, 修改熱鍵
 
 	; 重新綁定所有熱鍵
 	Hotkey, %Hotkey_結帳%, Label_結帳
