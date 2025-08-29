@@ -1,3 +1,6 @@
+
+
+
 ;====================熱鍵定義區塊====================
 ; 先設定預設值
 Hotkey_結帳 = Pause
@@ -525,7 +528,6 @@ Label_快速輸入:
 		)
 		; 自動打開記事本並帶入檔名
 		Run, notepad.exe "text_options.txt"
-		Return ; 結束
 	}
 	; 如果檔案存在，就顯示GUI選單
 	GoSub, Label_GoTextGui
