@@ -1,6 +1,5 @@
 ;====================熱鍵定義區塊====================
-; 在這裡設定你的熱鍵，並將功能描述寫在等號左邊。
-; 如果要變更熱鍵，只需修改等號右邊的按鍵名稱即可。
+
 Hotkey_結帳 = Pause
 Hotkey_帶入客訂單 = Insert
 Hotkey_直接列印發票 = ^+C
@@ -8,9 +7,10 @@ Hotkey_複製銷單 = ScrollLock
 Hotkey_緊急停止 = F8
 Hotkey_快速輸入 = ^E
 Hotkey_快捷鍵說明 = ^+H
+Hotkey_修改熱鍵 = ^+G
 
 ;====================啟動熱鍵區塊====================
-; 這段程式碼會動態啟用上面的熱鍵。
+
 Hotkey, %Hotkey_結帳%, Label_結帳
 Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
 Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
@@ -18,8 +18,10 @@ Hotkey, %Hotkey_複製銷單%, Label_複製銷單
 Hotkey, %Hotkey_緊急停止%, Label_緊急停止
 Hotkey, %Hotkey_快速輸入%, Label_快速輸入
 Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
+Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
 
-return ; 這裡很重要，用來分隔熱鍵定義和實際功能。
+Gosub, Label_快捷鍵說明
+return
 
 ;==================帶入客訂單功能模組==================
 Label_帶入客訂單:
@@ -548,7 +550,7 @@ GuiClose:
 ;==================快捷鍵說明模組功能==================
 Label_快捷鍵說明:
 	; 檢查視窗是否已經存在，如果存在就顯示
-	IfWinExist, 熱鍵說明
+	IfWinExist, 結帳小工具
 		Gui, Show
 	Else
 	{
@@ -597,31 +599,35 @@ Label_快捷鍵說明:
 		Hotkey_緊急停止_顯示 := TransformHotkeySymbol(Hotkey_緊急停止)
 		Hotkey_快速輸入_顯示 := TransformHotkeySymbol(Hotkey_快速輸入)
 		Hotkey_快捷鍵說明_顯示 := TransformHotkeySymbol(Hotkey_快捷鍵說明)
+		Hotkey_修改熱鍵_顯示 := TransformHotkeySymbol(Hotkey_修改熱鍵)
 
 		; 建立視窗
 		Gui, Add, Text, x10 y10, 結帳
-		Gui, Add, Text, x120 y10, %Hotkey_結帳_顯示%
+		Gui, Add, Text, x130 y10, %Hotkey_結帳_顯示%
 		
 		Gui, Add, Text, x10 y30, 帶入客訂單
-		Gui, Add, Text, x120 y30, %Hotkey_帶入客訂單_顯示%
+		Gui, Add, Text, x130 y30, %Hotkey_帶入客訂單_顯示%
 		
 		Gui, Add, Text, x10 y50, 直接列印發票
-		Gui, Add, Text, x120 y50, %Hotkey_直接列印發票_顯示%
+		Gui, Add, Text, x130 y50, %Hotkey_直接列印發票_顯示%
 		
 		Gui, Add, Text, x10 y70, 複製銷單
-		Gui, Add, Text, x120 y70, %Hotkey_複製銷單_顯示%
+		Gui, Add, Text, x130 y70, %Hotkey_複製銷單_顯示%
 		
 		Gui, Add, Text, x10 y90, 緊急停止
-		Gui, Add, Text, x120 y90, %Hotkey_緊急停止_顯示%
+		Gui, Add, Text, x130 y90, %Hotkey_緊急停止_顯示%
 		
 		Gui, Add, Text, x10 y110, 快速輸入
-		Gui, Add, Text, x120 y110, %Hotkey_快速輸入_顯示%
+		Gui, Add, Text, x130 y110, %Hotkey_快速輸入_顯示%
 		
 		Gui, Add, Text, x10 y130, 快捷鍵說明
-		Gui, Add, Text, x120 y130, %Hotkey_快捷鍵說明_顯示%
+		Gui, Add, Text, x130 y130, %Hotkey_快捷鍵說明_顯示%
 		
-		Gui, Add, Button, x10 y160 w200 h30 gGuiClose, 關閉
-		Gui, Show, , 熱鍵說明
+		Gui, Add, Text, x10 y150, 修改熱鍵
+		Gui, Add, Text, x130 y150, %Hotkey_修改熱鍵_顯示%
+		
+		Gui, Add, Button, x10 y180 w200 h30 gGuiClose, 關閉
+		Gui, Show, w230, 結帳小工具
 	}
 	Return
 
@@ -1094,3 +1100,109 @@ Print1:
     ToolTip, 發票流程完成, 900, 300
 
     Return
+	
+;================== 熱鍵修改功能模組 ==================
+
+Label_修改熱鍵:
+	Gui, Destroy
+	
+	; 建立熱鍵修改視窗
+	Gui, Add, Text, , 請選擇要修改的熱鍵：
+	Gui, Add, DropDownList, vHotkeyName gUpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵
+	
+	Gui, Add, Text, x10 y60, 目前熱鍵：
+	Gui, Add, Edit, x100 y60 w100 vCurrentHotkey ReadOnly
+	
+	Gui, Add, Text, x10 y90, 輸入新熱鍵：
+	Gui, Add, Hotkey, x100 y90 w100 vNewHotkey
+	
+	Gui, Add, Button, x10 y120 w80 h30 gSaveHotkey, 儲存
+	Gui, Add, Button, x100 y120 w80 h30 gGuiClose, 取消
+	
+	Gui, Show, , 修改熱鍵
+	
+	; 預設顯示第一個選項的熱鍵
+	GuiControl, Choose, HotkeyName, 1
+	GoSub, UpdateHotkey
+	return
+
+UpdateHotkey:
+	Gui, Submit, NoHide
+	
+	; 根據選擇的項目，取得對應的熱鍵變數
+	if (HotkeyName = "結帳")
+		hotkey_to_display := Hotkey_結帳
+	else if (HotkeyName = "帶入客訂單")
+		hotkey_to_display := Hotkey_帶入客訂單
+	else if (HotkeyName = "直接列印發票")
+		hotkey_to_display := Hotkey_直接列印發票
+	else if (HotkeyName = "複製銷單")
+		hotkey_to_display := Hotkey_複製銷單
+	else if (HotkeyName = "緊急停止")
+		hotkey_to_display := Hotkey_緊急停止
+	else if (HotkeyName = "快速輸入")
+		hotkey_to_display := Hotkey_快速輸入
+	else if (HotkeyName = "快捷鍵說明")
+		hotkey_to_display := Hotkey_快捷鍵說明
+	else if (HotkeyName = "修改熱鍵")
+		hotkey_to_display := Hotkey_修改熱鍵
+
+	; 呼叫函式將符號熱鍵轉成文字
+	display_text := TransformHotkeySymbol(hotkey_to_display)
+	
+	; 更新 GUI 上的熱鍵文字
+	GuiControl,, CurrentHotkey, %display_text%
+
+	return
+
+SaveHotkey:
+	Gui, Submit
+	
+	if (NewHotkey = "")
+	{
+		MsgBox, 0, 錯誤, 新熱鍵不能為空白！
+		Return
+	}
+
+	; 解除舊熱鍵的綁定
+	Hotkey, %Hotkey_結帳%, Off
+	Hotkey, %Hotkey_帶入客訂單%, Off
+	Hotkey, %Hotkey_直接列印發票%, Off
+	Hotkey, %Hotkey_複製銷單%, Off
+	Hotkey, %Hotkey_緊急停止%, Off
+	Hotkey, %Hotkey_快速輸入%, Off
+	Hotkey, %Hotkey_快捷鍵說明%, Off
+	Hotkey, %Hotkey_修改熱鍵%, Off
+
+	; 根據選擇更新對應的熱鍵變數
+	if (HotkeyName = "結帳")
+		Hotkey_結帳 := NewHotkey
+	else if (HotkeyName = "帶入客訂單")
+		Hotkey_帶入客訂單 := NewHotkey
+	else if (HotkeyName = "直接列印發票")
+		Hotkey_直接列印發票 := NewHotkey
+	else if (HotkeyName = "複製銷單")
+		Hotkey_複製銷單 := NewHotkey
+	else if (HotkeyName = "緊急停止")
+		Hotkey_緊急停止 := NewHotkey
+	else if (HotkeyName = "快速輸入")
+		Hotkey_快速輸入 := NewHotkey
+	else if (HotkeyName = "快捷鍵說明")
+		Hotkey_快捷鍵說明 := NewHotkey
+	else if (HotkeyName = "修改熱鍵")
+		Hotkey_修改熱鍵 := NewHotkey
+
+	; 重新綁定所有熱鍵
+	Hotkey, %Hotkey_結帳%, Label_結帳
+	Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
+	Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
+	Hotkey, %Hotkey_複製銷單%, Label_複製銷單
+	Hotkey, %Hotkey_緊急停止%, Label_緊急停止
+	Hotkey, %Hotkey_快速輸入%, Label_快速輸入
+	Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
+	Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
+	
+	; 關閉視窗並提示
+	Gui, Destroy
+	MsgBox, 0, 成功, 熱鍵已修改成功！
+	Return
