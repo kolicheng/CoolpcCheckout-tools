@@ -177,8 +177,8 @@ Pause::
     Gosub, stoptip
     Return
 
-;==================複製銷單功能模組==================
-ScrollLock::
+;==================直接列印發票功能模組==================
+^+C::
     __title := "列印-輸入銷單後四碼"
     __text := ""
     OutputVar := ""
@@ -250,7 +250,7 @@ ScrollLock::
     Return
 
 ;==================拷貝銷單功能模組==================
-^+C::
+ScrollLock::
     Gui, Destroy
 
     __title := "拷貝-銷單後4碼或完整8碼"
@@ -307,7 +307,7 @@ ScrollLock::
 
     Loop {
         Sleep % 100
-        ControlGet, OutputVar, Visible,, Edit86, ahk_class ThunderRT6MDIForm, 銷貨單
+        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm, 銷貨單
         control = %OutputVar%
         if (control = 1) {
             Sleep % 100
@@ -596,7 +596,7 @@ gosales:
 		if (Atr = 1) {
 			ToolTip, 等待銷單為退出狀態中...., 900, 300
 			Loop {
-				ControlGet, OutputVar, Visible,, Edit86, ahk_class ThunderRT6MDIForm
+				ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
 				if (OutputVar = 1) {
 					Sleep % 100
 					Send,{Esc}
@@ -654,7 +654,7 @@ main1:
     ToolTip, 判斷銷貨單為新增狀態中..., 900, 300
     loop {
         ToolTip, 等待銷單為新增狀態中...., 900, 300
-        ControlGet, OutputVar, Visible,, Edit86, ahk_class ThunderRT6MDIForm
+        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
         if (OutputVar = 0) {
             Sleep % 100
             Send,{F2}
@@ -673,7 +673,7 @@ main1:
                     Gosub, slip
                     ToolTip, 等待銷單為新增狀態中...., 900, 300
                     loop {
-                        ControlGet, OutputVar, Visible,, Edit86, ahk_class ThunderRT6MDIForm
+                        ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
                         if (OutputVar = 0) {
                             Sleep % 100
                             Send,{F2}
@@ -695,7 +695,7 @@ main2:
     Gosub, slip
     ToolTip, 判斷銷貨單為退出狀態中..., 900, 300
     Loop {
-    ControlGet, OutputVar, Visible,, Edit86, ahk_class ThunderRT6MDIForm
+    ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
     if (OutputVar = 1) {
     loop {
     WinGetText,Str,A
