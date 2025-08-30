@@ -10,8 +10,9 @@ Hotkey_快捷鍵說明 = ^+H
 Hotkey_修改熱鍵 = ^+G
 Hotkey_全域設定 = ^+S
 
-; 設定 OSD 預設值
+; 設定 OSD 和簡易版結帳預設值
 OSD_enabled := 1 ; 預設開啟 OSD
+simple_checkout_enabled := 0 ; 新增：預設使用完整版結帳
 
 ; 檢查 Hotkeys.ini 檔案是否存在
 if FileExist("Hotkeys.ini") {
@@ -30,6 +31,12 @@ if FileExist("Hotkeys.ini") {
     IniRead, OSD_enabled, Hotkeys.ini, Settings, OSD
     if (ErrorLevel) {
         OSD_enabled := 1
+    }
+
+    ; 新增：檢查簡易版結帳設定是否存在，如果沒有，就用預設值 0
+    IniRead, simple_checkout_enabled, Hotkeys.ini, Settings, SimpleCheckout
+    if (ErrorLevel) {
+        simple_checkout_enabled := 0
     }
 
     ; 檢查「已執行過」的變數是否存在
@@ -59,6 +66,8 @@ if FileExist("Hotkeys.ini") {
 
     ; 儲存 OSD 預設值到檔案
     IniWrite, %OSD_enabled%, Hotkeys.ini, Settings, OSD
+    ; 新增：儲存簡易版結帳預設值
+    IniWrite, %simple_checkout_enabled%, Hotkeys.ini, Settings, SimpleCheckout
 
     ; 存入「已執行過」的變數
     IniWrite, 1, Hotkeys.ini, Settings, RunStatus
@@ -192,24 +201,141 @@ Label_結帳:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 	
-	; 如果 OSD_enabled 為 1，則執行 Finalcheck 函式
-	if (OSD_enabled = 1) {
-		Gosub, Finalcheck
+	; 新增：判斷是否為簡易版結帳，如果是就執行簡易版流程
+	if (simple_checkout_enabled = 1) {
+		Gosub, Simple_Checkout_Process
 	} else {
+		; 如果 OSD_enabled 為 1，則執行 Finalcheck 函式
+		if (OSD_enabled = 1) {
+			Gosub, Finalcheck
+		} else {
+			Gui, Destroy
+		}
+	
+		__title := "開發票-實收金額"
+		__text := ""
+		InputBox, inputE,%__title%,%__text%,,200,100
+		if (ErrorLevel = 1) {
+			Gosub, stop
+		}
+		ControlGetText, OutputVar , Edit84, ahk_class ThunderRT6MDIForm, 銷貨單
+		A := inputE
+		B := StrReplace(OutputVar, "," )
+		Var := A - B
+		MsgBox, 260, "結帳小工具, 需要電子發票載具嗎？"
+		IfMsgBox Yes
+		{
+			__title := "請輸入載具號碼"
+			__text := ""
+			InputBox, Haystack,%__title%,%__text%,,200,100
+			if (ErrorLevel = 1) {
+				Gosub, stop
+			}
+			inputA := Haystack
+			Needle := "/"
+			If InStr( inputA, Needle){
+				inputA := Haystack
+			}
+			else {
+				Gosub, stop
+			}
+		}
+		else {
+			inputA := ""
+		}
+	
+		__title := "請輸入統一編號"
+		__text := ""
+		InputBox, __invoice,%__title%,%__text%,,200,100
+		if (ErrorLevel = 1) {
+			Gosub, stop
+		}
+		inputB := StrLen(__invoice)
+		if (inputB = 8 or inputB = 0) {
+			inputB := __invoice
+		}
+		else {
+			Gosub, stop
+		}
+		MsgBox, 260, 結帳小工具, 刷卡嗎？
+		IfMsgBox Yes
+		{
+			__title := "請輸入卡號後4碼"
+			__text := ""
+			InputBox, inputC,%__title%,%__text%,,200,100
+			ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
+			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
+			if (ErrorLevel = 1) {
+				Gosub, stop
+			}
+		}
+		else {
+			inputC := ""
+		}
+	
+		Gosub, run1
+	
+		WinActivate ahk_class ThunderRT6MDIForm
+		Control, Check,, Button5, ahk_class ThunderRT6MDIForm, 銷貨單
+		ToolTip, 發票視窗開啟中..., 900, 300
+		WinWait, ahk_class ThunderRT6FormDC, 重載貨單明細
+		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 重載貨單明細
+		control = %OutputVar%
+		while (control := "重載貨單明細") {
+			ToolTip, 等待發票號碼產生中..., 900, 300
+			SetControlDelay 0
+			ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
+			loop {
+				ControlGetText, OutputVar, Edit5, ahk_class ThunderRT6FormDC
+				if StrLen(OutputVar) = 0 {
+					Sleep, 1000
+					continue
+				}
+				else {
+					ControlGetText, OutputVarEdit48, Edit48, ahk_class ThunderRT6FormDC
+					if StrLen(OutputVarEdit48) = 0 {
+						Control, EditPaste, %inputA%, Edit48, ahk_class ThunderRT6FormDC
+					}
+					ControlGetText, OutputVaredit2, Edit2, ahk_class ThunderRT6FormDC
+					if StrLen(OutputVaredit2) = 0 {
+						Control, EditPaste, %inputB%, Edit2, ahk_class ThunderRT6FormDC
+					}
+					ControlGetText, OutputVarEdit14, Edit14, ahk_class ThunderRT6FormDC
+					if (OutputVarEdit14 = "") {
+						Control, EditPaste, %inputC%%A_Space%, Edit14, ahk_class ThunderRT6FormDC
+					}
+					break
+				}
+			}
+			break
+		}
+	
+		Sleep % 100
+		Send,{F9}
+		Send, {Esc}
+		Gosub, slip
+		Send,{F9}
+	
+		Gosub, Print
+		Gosub, slip
+	
+		ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
+		Send, {Enter}
+	
+		Gosub, stoptip
+	
+		; 關閉 OSD 視窗並停止更新
 		Gui, Destroy
+		SetTimer, UpdateOSD, Off
 	}
 
-	__title := "開發票-實收金額"
-	__text := ""
-	InputBox, inputE,%__title%,%__text%,,200,100
-	if (ErrorLevel = 1) {
-		Gosub, stop
-	}
-	ControlGetText, OutputVar , Edit84, ahk_class ThunderRT6MDIForm, 銷貨單
-	A := inputE
-	B := StrReplace(OutputVar, "," )
-	Var := A - B
-	MsgBox, 260, "結帳小工具, 需要電子發票載具嗎？"
+	; 關閉開關，表示功能執行完畢。
+	is_running_flag := 0
+	Return
+
+; 新增：簡易版結帳的子程序
+Simple_Checkout_Process:
+	MsgBox, 260,, 需要電子發票載具嗎？
 	IfMsgBox Yes
 	{
 		__title := "請輸入載具號碼"
@@ -230,27 +356,33 @@ Label_結帳:
 	else {
 		inputA := ""
 	}
-
+	
 	__title := "請輸入統一編號"
 	__text := ""
 	InputBox, __invoice,%__title%,%__text%,,200,100
 	if (ErrorLevel = 1) {
 		Gosub, stop
 	}
+	
 	inputB := StrLen(__invoice)
+	
 	if (inputB = 8 or inputB = 0) {
 		inputB := __invoice
 	}
 	else {
 		Gosub, stop
 	}
-	MsgBox, 260, 結帳小工具, 刷卡嗎？
+	
+	MsgBox, 260,, 刷卡嗎？
 	IfMsgBox Yes
 	{
 		__title := "請輸入卡號後4碼"
 		__text := ""
 		InputBox, inputC,%__title%,%__text%,,200,100
-		ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
+		
+		;刷卡補備註
+		ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
+		ControlSend, Edit30, {Right}, ahk_class ThunderRT6MDIForm
 		Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
 		if (ErrorLevel = 1) {
 			Gosub, stop
@@ -259,7 +391,7 @@ Label_結帳:
 	else {
 		inputC := ""
 	}
-
+	
 	Gosub, run1
 
 	WinActivate ahk_class ThunderRT6MDIForm
@@ -314,10 +446,8 @@ Label_結帳:
 	; 關閉 OSD 視窗並停止更新
 	Gui, Destroy
 	SetTimer, UpdateOSD, Off
-
-	; 關閉開關，表示功能執行完畢。
-	is_running_flag := 0
 	Return
+; 新增子程序結束
 
 ;==================直接列印發票功能模組==================
 Label_直接列印發票:
@@ -592,18 +722,17 @@ Label_快速輸入:
 			你好 請問可以跟你們調一個嗎? 謝謝
 			中租分期 姓名: 仲信案編: 期數:期
 		)
-		; 設定接下來的檔案操作都使用 UTF-8 編碼
 		FileEncoding, UTF-8
-		; 建立檔案並寫入範例文字
 		FileAppend, %DefaultText%, text_options.txt
-		; 跳出訊息視窗
 		MsgBox, 0, 提醒, 偵測不到「text_options.txt」檔案。%A_Space%
 		(LTrim
 			現在將為您建立一個新的檔案！已自動填入範例文字，請直接儲存即可使用。
 		)
 		; 自動打開記事本並帶入檔名
 		Run, notepad.exe "text_options.txt"
-		Return ; 結束
+		; 直接顯示GUI選單（不等記事本關閉）
+		GoSub, Label_GoTextGui
+		Return
 	}
 	; 如果檔案存在，就顯示GUI選單
 	GoSub, Label_GoTextGui
@@ -621,7 +750,7 @@ Label_GoTextGui:
 	Gui, Add, Text, , 請選擇要輸入的文字：
 
 	; 讀取文字檔並動態建立按鈕
-	FileEncoding, UTF-8  ; 讀取檔案前也需要指定編碼，確保正確
+	FileEncoding, UTF-8
 	y_pos := 30
 	Loop, read, text_options.txt
 	{
@@ -633,29 +762,24 @@ Label_GoTextGui:
 	Gui, Add, Button, x10 y%y_pos% w60 h30 gLabel_GoAdd, 新增
 	Gui, Add, Button, x80 y%y_pos% w60 h30 gLabel_GoEdit, 編輯
 	Gui, Add, Button, x150 y%y_pos% w60 h30 gLabel_GoTextGui, 重新整理
-	Gui, Add, Button, x220 y%y_pos% w60 h30 gLabel_GuiClose, 關閉
+	Gui, Add, Button, x220 y%y_pos% w60 h30 gLabel_GuiClose_Text, 關閉
 	Gui, Show, , 文字快捷選單
 	Return
 
 Label_GoText:
-	; 記住你點擊按鈕前的視窗
 	LastActiveWinID := WinExist("A")
-
-	; 取得你點擊的按鈕上的文字
 	ButtonText := A_GuiControl
-	Gui, Hide ; 隱藏選單視窗
-	WinActivate, ahk_id %LastActiveWinID% ; 切換回原本的視窗
-	Sleep, 100 ; 稍微等一下
-	Send, {Home}%ButtonText% ; 輸入文字
+	Gui, Hide
+	WinActivate, ahk_id %LastActiveWinID%
+	Sleep, 100
+	Send, {Home}%ButtonText%
 	return
 
 Label_GoEdit:
-	; 自動打開記事本並帶入檔名
 	Run, notepad.exe "text_options.txt"
 	Return
 
 Label_GoAdd:
-	; 建立一個新的小視窗
 	Gui, Destroy
 	Gui, 2:Default
 	Gui, Add, Text, , 請輸入或貼上要新增的文字：
@@ -666,17 +790,10 @@ Label_GoAdd:
 	return
 
 Label_AddText:
-	; 取得輸入的文字
 	GuiControlGet, NewText
-
-	; 寫入檔案並換行
 	FileEncoding, UTF-8
 	FileAppend, `n%NewText%, text_options.txt
-
-	; 關閉新增視窗
 	Gui, Destroy
-
-	; 重新整理主選單
 	GoSub, Label_GoTextGui
 	Return
 
@@ -685,9 +802,9 @@ Label_CloseAdd:
 	GoSub, Label_GoTextGui
 	Return
 
-; GUI關閉時的動作
-Label_GuiClose:
+Label_GuiClose_Text:
 	Gui, Destroy
+	is_running_flag := 0
 	Return
 
 ;==================快捷鍵說明模組功能==================
@@ -743,30 +860,30 @@ Label_快捷鍵說明:
 	Hotkey_快速輸入_顯示 := TransformHotkeySymbol(Hotkey_快速輸入)
 	Hotkey_快捷鍵說明_顯示 := TransformHotkeySymbol(Hotkey_快捷鍵說明)
 	Hotkey_修改熱鍵_顯示 := TransformHotkeySymbol(Hotkey_修改熱鍵)
-	Hotkey_全域設定_顯示 := TransformHotkeySymbol(Hotkey_全域設定) ; 取得全域設定熱鍵文字
+	Hotkey_全域設定_顯示 := TransformHotkeySymbol(Hotkey_全域設定)
 
-	; 建立視窗
-	Gui, Add, Text, x10 y10, 結帳
-	Gui, Add, Text, x130 y10, %Hotkey_結帳_顯示%
-	Gui, Add, Text, x10 y30, 帶入客訂單
-	Gui, Add, Text, x130 y30, %Hotkey_帶入客訂單_顯示%
-	Gui, Add, Text, x10 y50, 直接列印發票
-	Gui, Add, Text, x130 y50, %Hotkey_直接列印發票_顯示%
-	Gui, Add, Text, x10 y70, 複製銷單
-	Gui, Add, Text, x130 y70, %Hotkey_複製銷單_顯示%
-	Gui, Add, Text, x10 y90, 緊急停止
-	Gui, Add, Text, x130 y90, %Hotkey_緊急停止_顯示%
-	Gui, Add, Text, x10 y110, 快速輸入
-	Gui, Add, Text, x130 y110, %Hotkey_快速輸入_顯示%
-	Gui, Add, Text, x10 y130, 快捷鍵說明
-	Gui, Add, Text, x130 y130, %Hotkey_快捷鍵說明_顯示%
-	Gui, Add, Text, x10 y150, 修改熱鍵
-	Gui, Add, Text, x130 y150, %Hotkey_修改熱鍵_顯示%
-	Gui, Add, Text, x10 y170, 全域設定
-	Gui, Add, Text, x130 y170, %Hotkey_全域設定_顯示%
-	Gui, Add, Button, x10 y190 w200 h30 gLabel_GuiClose, 關閉
-	Gui, Show, w250, 結帳小工具
-	
+	; 建立視窗，調整位置與尺寸
+	Gui, Add, Text, x20 y20 w100 h24, 結帳
+	Gui, Add, Text, x130 y20 w100 h24, %Hotkey_結帳_顯示%
+	Gui, Add, Text, x20 y50 w100 h24, 帶入客訂單
+	Gui, Add, Text, x130 y50 w100 h24, %Hotkey_帶入客訂單_顯示%
+	Gui, Add, Text, x20 y80 w100 h24, 直接列印發票
+	Gui, Add, Text, x130 y80 w100 h24, %Hotkey_直接列印發票_顯示%
+	Gui, Add, Text, x20 y110 w100 h24, 複製銷單
+	Gui, Add, Text, x130 y110 w100 h24, %Hotkey_複製銷單_顯示%
+	Gui, Add, Text, x20 y140 w100 h24, 緊急停止
+	Gui, Add, Text, x130 y140 w100 h24, %Hotkey_緊急停止_顯示%
+	Gui, Add, Text, x20 y170 w100 h24, 快速輸入
+	Gui, Add, Text, x130 y170 w100 h24, %Hotkey_快速輸入_顯示%
+	Gui, Add, Text, x20 y200 w100 h24, 快捷鍵說明
+	Gui, Add, Text, x130 y200 w100 h24, %Hotkey_快捷鍵說明_顯示%
+	Gui, Add, Text, x20 y230 w100 h24, 修改熱鍵
+	Gui, Add, Text, x130 y230 w100 h24, %Hotkey_修改熱鍵_顯示%
+	Gui, Add, Text, x20 y260 w100 h24, 全域設定
+	Gui, Add, Text, x130 y260 w100 h24, %Hotkey_全域設定_顯示%
+	Gui, Add, Button, x20 y300 w210 h32 gLabel_GuiClose, 關閉
+	Gui, Show, w260 h350, 結帳小工具
+
 	Return
 	
 ;==================緊急停止功能模組==================
@@ -805,6 +922,7 @@ Finalcheck:
     Gui, Add, Text, x20 y45, 開立金額：
     Gui, Add, Text, x20 y75, 找零金額：
     Gui, Add, Text, x190 y15, 載具號碼：
+  
     Gui, Add, Text, x190 y45, 統一編號：
     Gui, Add, Text, x190 y75, 卡號四碼：
     WinSet, TransColor, %CustomColor% 100
@@ -836,6 +954,7 @@ Salesname:
     loop {
         ControlGetFocus, OutputVar , ahk_class ThunderRT6MDIForm
         if (OutputVar := "Edit27") {
+          
             ControlSetText , Edit22, %OutputVar2%, ahk_class ThunderRT6MDIForm
             ControlSetText , Edit23, %OutputVar3%, ahk_class ThunderRT6MDIForm
             break
@@ -852,6 +971,7 @@ Salesname:
 Markname:
     EnvGet, OutputVar1, mark
 
+ 
     Needlep1 := "w501"
     Needlep2 := "W502"
     Needlek1 := "5X01"
@@ -875,6 +995,7 @@ Markname:
     else if InStr(OutputVar1, Needlem1) {
         ControlClick, Edit38, ahk_class ThunderRT6MDIForm,,,, NA
         ControlSetText, Edit38,, ahk_class ThunderRT6MDIForm
+      
         ControlSendRaw, Edit38, 394`n, ahk_class ThunderRT6MDIForm
     }
 
@@ -893,6 +1014,7 @@ gosales1:
         Needle := "銷貨單"
         Atr := InStr(Haystack, Needle)
         if (Atr = 1) {
+      
             break
         }
         else {
@@ -901,12 +1023,14 @@ gosales1:
             Haystack := Str
             Needle := "功能快捷視窗"
             Atr := InStr(Haystack, Needle)
+       
             while not (Atr = 1) {
                 Sleep % 100
                 Send, {F12}
                 Sleep % 100
                 break
             }
+         
             WinGetText,Str,A
             Haystack := Str
             Needle := "銷貨單"
@@ -914,6 +1038,7 @@ gosales1:
             while not (Atr1 = 1) {
                 Sleep % 100
                 Send, {F10}l11
+  
                 break
             }
         }
@@ -937,16 +1062,19 @@ gosales:
             Loop {
                 ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
                 if (OutputVar = 1) {
+       
                     Sleep % 100
                     Send,{Esc}
                     Sleep % 500
                     Gosub, confirm
                     break
+  
                 }
                 else {
                     ToolTip, 銷貨單等待目標視窗錯誤，請手動切換或是重新流程！, 900, 300
                     break
                 }
+          
             }
             break
         }
@@ -962,12 +1090,14 @@ gosales:
                 Sleep % 100
                 break
             }
+ 
             WinGetText,Str,A
             Haystack := Str
             Needle := "銷貨單"
             Atr1 := InStr(Haystack, Needle)
             while not (Atr1 = 1) {
                 Sleep % 100
+           
                 Send, {F10}l11
                 break
             }
@@ -999,6 +1129,7 @@ main1:
         if (OutputVar = 0) {
             Sleep % 100
             Send,{F2}
+           
             break
         }
         else {
@@ -1006,19 +1137,23 @@ main1:
                 ControlGetText, OutputVar, Edit36, ahk_class ThunderRT6MDIForm
                 if StrLen(OutputVar) = 0 {
                     break
+         
                 }
                 else {
                     ToolTip, 等待銷單為退出狀態中...., 900, 300
                     Gosub, main2
                     Gosub, confirm
+           
                     Gosub, slip
                     ToolTip, 等待銷單為新增狀態中...., 900, 300
                     loop {
                         ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
+                 
                         if (OutputVar = 0) {
                             Sleep % 100
                             Send,{F2}
                             break
+   
                         }
                     }
                 }
@@ -1029,7 +1164,8 @@ main1:
 
     ToolTip, 銷單新增完成, 900, 300
 
-    Return
+    
+Return
 
 ;==================檢查銷貨單狀態功能（其他視窗）==================
 main2:
@@ -1050,6 +1186,7 @@ main2:
     break
     }
     else{
+  
     Sleep % 100
     ToolTip, 等待銷單為退出狀態中...., 900, 300
     break
@@ -1078,7 +1215,8 @@ stoptip:
 ;==================判斷銷單狀態==================
 slip:
     ToolTip, 銷貨單視窗確認中..., 900, 300
-    loop {
+    loop 
+{
         WinGet, ActiveWindowID, ID, A
         WinGetText, VisibleText, ahk_id %ActiveWindowID%
         if (SubStr(VisibleText, 1, 3) = "銷貨單")
@@ -1098,6 +1236,7 @@ find:
     Gosub, slip
     ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
     ToolTip, 詳查視窗載入中..., 900, 300
+ 
     WinGetText,Str,A
     Haystack := Str
     Needle := " 審核確認"
@@ -1116,6 +1255,7 @@ receipt:
     ToolTip, 發票視窗開啟中..., 900, 300
     loop {
         WinGetText,Str,A
+    
         Haystack := Str
         Needle := "多選 "
         Atr := InStr(Haystack, Needle)
@@ -1125,6 +1265,7 @@ receipt:
         else{
             ToolTip, 等待發票視窗開啟中....., 900, 300
             break
+     
         }
     }
     Return
@@ -1140,6 +1281,7 @@ load:
         if (Atr = 1) {
             break
         }   
+   
         else{
             ToolTip, 等待客訂單載入畫面中...., 900, 300
             break
@@ -1155,6 +1297,7 @@ confirm:
         Haystack := Str
         Needle := "確定"
         Atr := InStr(Haystack, Needle)
+ 
         if (Atr = 1) {
             Sleep % 100
             SetControlDelay -1
@@ -1163,6 +1306,7 @@ confirm:
         }
         else{
             Sleep % 100
+       
             continue
         }
     }
@@ -1181,6 +1325,7 @@ Print:
             Send,{Esc}
             break
         }
+    
         else {
             Sleep % 100
         }
@@ -1191,6 +1336,7 @@ Print:
         if (OutputVar = 1) {
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton6, ahk_class ThunderRT6FormDC,,,, NA
+           
             break
         }
         else {
@@ -1207,6 +1353,7 @@ Print1:
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6CommandButton6, A
         if (OutputVar = 1) {
+         
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton6, ahk_class ThunderRT6FormDC,,,, NA
             break
@@ -1218,8 +1365,11 @@ Print1:
 
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6PictureBoxDC1, A
+        
         if (OutputVar = 1) {
             Send,{Esc}
+			;Send,{Left} 待確認
+			;Send,{ENTER} 待確認
             break
         }
         else {
@@ -1237,7 +1387,7 @@ Label_修改熱鍵:
 	
 	; 建立熱鍵修改視窗
 	Gui, Add, Text, , 請選擇要修改的熱鍵：
-	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵|全域設定 ; 新增全域設定選項
+	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵|全域設定
 	Gui, Add, Text, x10 y60, 目前熱鍵：
 	Gui, Add, Edit, x100 y60 w120 vCurrentHotkey ReadOnly
 	Gui, Add, Text, x10 y90, 輸入新熱鍵：
@@ -1272,7 +1422,7 @@ Label_UpdateHotkey:
 	else if (HotkeyName = "修改熱鍵")
 		hotkey_to_display := Hotkey_修改熱鍵
 	else if (HotkeyName = "全域設定")
-		hotkey_to_display := Hotkey_全域設定 ; 讀取全域設定熱鍵
+		hotkey_to_display := Hotkey_全域設定
 
 	; 呼叫函式將符號熱鍵轉成文字
 	display_text := TransformHotkeySymbol(hotkey_to_display)
@@ -1300,7 +1450,7 @@ Label_SaveHotkey:
 	Hotkey, %Hotkey_快速輸入%, Off
 	Hotkey, %Hotkey_快捷鍵說明%, Off
 	Hotkey, %Hotkey_修改熱鍵%, Off
-	Hotkey, %Hotkey_全域設定%, Off ; 解除全域設定舊熱鍵的綁定
+	Hotkey, %Hotkey_全域設定%, Off
 
 	; 根據選擇更新對應的熱鍵變數
 	if (HotkeyName = "結帳")
@@ -1320,7 +1470,7 @@ Label_SaveHotkey:
 	else if (HotkeyName = "修改熱鍵")
 		Hotkey_修改熱鍵 := NewHotkey
 	else if (HotkeyName = "全域設定")
-		Hotkey_全域設定 := NewHotkey ; 更新全域設定熱鍵變數
+		Hotkey_全域設定 := NewHotkey
 
     ; 將新的熱鍵設定寫入檔案
     IniWrite, %Hotkey_結帳%, Hotkeys.ini, Hotkeys, 結帳
@@ -1331,7 +1481,7 @@ Label_SaveHotkey:
     IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
     IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
     IniWrite, %Hotkey_修改熱鍵%, Hotkeys.ini, Hotkeys, 修改熱鍵
-    IniWrite, %Hotkey_全域設定%, Hotkeys.ini, Hotkeys, 全域設定 ; 儲存全域設定熱鍵
+    IniWrite, %Hotkey_全域設定%, Hotkeys.ini, Hotkeys, 全域設定
     
     ; 在熱鍵儲存後，將 RunStatus 的值設為 0
     IniWrite, 0, Hotkeys.ini, Settings, RunStatus
@@ -1345,16 +1495,16 @@ Label_SaveHotkey:
     Hotkey, %Hotkey_快速輸入%, Label_快速輸入
     Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
     Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
-    Hotkey, %Hotkey_全域設定%, Label_全域設定 ; 重新綁定全域設定熱鍵
+    Hotkey, %Hotkey_全域設定%, Label_全域設定
     
     ; 關閉視窗並提示
     Gui, Destroy
     MsgBox, 0, 成功, 熱鍵已修改成功！下次啟動時將會再次顯示熱鍵說明。
 	Reload
-	Return
 	
 ;==================全域設定模組==================
 Label_全域設定:
+	global OSD_enabled, simple_checkout_enabled, is_running_flag
 	; 檢查開關，如果正在執行中，就立即停止。
 	if is_running_flag {
 		Return
@@ -1366,20 +1516,27 @@ Label_全域設定:
 	Gui, Destroy
 
 	; 建立全域設定視窗
-	Gui, Add, Text, , 請設定 OSD 顯示：
+	Gui, Add, Text, x20 y20 w120 h24, 請依照需求勾選：
 	; 根據 OSD_enabled 的設定來決定勾選狀態
 	if (OSD_enabled = 1) {
-		Gui, Add, Checkbox, vOSD_Setting Checked, 開啟 OSD
+		Gui, Add, Checkbox, x20 y60 w160 h28 vOSD_Setting Checked, 開啟 OSD
 	} else {
-		Gui, Add, Checkbox, vOSD_Setting, 開啟 OSD
+		Gui, Add, Checkbox, x20 y60 w160 h28 vOSD_Setting, 開啟 OSD
 	}
 	
-	Gui, Add, Button, gLabel_SaveSettings w80 h30, 儲存
-	Gui, Add, Button, gLabel_GuiClose w80 h30, 取消
-	Gui, Show, w200, 全域設定
-	Return
+	; 新增：根據 simple_checkout_enabled 的設定來決定勾選狀態
+	if (simple_checkout_enabled = 1) {
+		Gui, Add, Checkbox, x20 y100 w160 h28 vSimpleCheckout_Setting Checked, 簡易版結帳
+	} else {
+		Gui, Add, Checkbox, x20 y100 w160 h28 vSimpleCheckout_Setting, 簡易版結帳
+	}
 
+	Gui, Add, Button, x20 y150 w80 h32 gLabel_SaveSettings, 儲存
+	Gui, Add, Button, x120 y150 w80 h32 gLabel_GuiClose, 取消
+	Gui, Show, w230 h200, 全域設定
+	Return
 Label_SaveSettings:
+	global OSD_enabled, simple_checkout_enabled, is_running_flag
 	Gui, Submit, NoHide
 	
 	; 讀取 checkbox 的狀態
@@ -1389,13 +1546,29 @@ Label_SaveSettings:
 		OSD_enabled := 0
 	}
 	
+	; 新增：讀取簡易版結帳 checkbox 的狀態
+	if SimpleCheckout_Setting {
+		simple_checkout_enabled := 1
+	} else {
+		simple_checkout_enabled := 0
+	}
+	
 	; 將新設定寫入檔案
 	IniWrite, %OSD_enabled%, Hotkeys.ini, Settings, OSD
+	; 新增：將簡易版結帳新設定寫入檔案
+	IniWrite, %simple_checkout_enabled%, Hotkeys.ini, Settings, SimpleCheckout
 
 	; 關閉視窗並提示
 	Gui, Destroy
 	MsgBox, 0, 成功, 全域設定已儲存！
 	
 	; 關閉開關
+	is_running_flag := 0
+	Reload
+	Return
+
+; 修正：取消按鈕也要關閉開關，避免無法再次開啟
+Label_GuiClose:
+	Gui, Destroy
 	is_running_flag := 0
 	Return
