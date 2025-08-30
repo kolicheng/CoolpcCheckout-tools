@@ -1,7 +1,4 @@
-
-
-
-;====================熱鍵定義區塊====================
+﻿;====================熱鍵定義區塊====================
 ; 先設定預設值
 Hotkey_結帳 = Pause
 Hotkey_帶入客訂單 = Insert
@@ -12,8 +9,9 @@ Hotkey_快速輸入 = ^E
 Hotkey_快捷鍵說明 = ^+H
 Hotkey_修改熱鍵 = ^+G
 
-; 讀取設定檔
+; 檢查 Hotkeys.ini 檔案是否存在
 if FileExist("Hotkeys.ini") {
+    ; 如果檔案存在，讀取熱鍵設定
     IniRead, Hotkey_結帳, Hotkeys.ini, Hotkeys, 結帳
     IniRead, Hotkey_帶入客訂單, Hotkeys.ini, Hotkeys, 帶入客訂單
     IniRead, Hotkey_直接列印發票, Hotkeys.ini, Hotkeys, 直接列印發票
@@ -22,10 +20,37 @@ if FileExist("Hotkeys.ini") {
     IniRead, Hotkey_快速輸入, Hotkeys.ini, Hotkeys, 快速輸入
     IniRead, Hotkey_快捷鍵說明, Hotkeys.ini, Hotkeys, 快捷鍵說明
     IniRead, Hotkey_修改熱鍵, Hotkeys.ini, Hotkeys, 修改熱鍵
+
+    ; 檢查「已執行過」的變數是否存在
+    IniRead, run_status, Hotkeys.ini, Settings, RunStatus
+    if (run_status = "1") {
+        ; 如果找到 RunStatus=1，表示不是第一次啟動，什麼都不做
+    } else {
+        ; 如果沒有找到或值不為1，表示需要重新顯示說明
+        Gosub, Label_快捷鍵說明
+        IniWrite, 1, Hotkeys.ini, Settings, RunStatus
+    }
+} else {
+    ; 如果檔案不存在，表示是第一次啟動
+    ; 顯示快捷鍵說明
+    Gosub, Label_快捷鍵說明
+    
+    ; 將預設熱鍵存入新的檔案
+    IniWrite, %Hotkey_結帳%, Hotkeys.ini, Hotkeys, 結帳
+    IniWrite, %Hotkey_帶入客訂單%, Hotkeys.ini, Hotkeys, 帶入客訂單
+    IniWrite, %Hotkey_直接列印發票%, Hotkeys.ini, Hotkeys, 直接列印發票
+    IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
+    IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
+    IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
+    IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
+    IniWrite, %Hotkey_修改熱鍵%, Hotkeys.ini, Hotkeys, 修改熱鍵
+
+    ; 存入「已執行過」的變數
+    IniWrite, 1, Hotkeys.ini, Settings, RunStatus
+	FileSetAttrib, +H, Hotkeys.ini
 }
 
 ;====================啟動熱鍵區塊====================
-
 Hotkey, %Hotkey_結帳%, Label_結帳
 Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
 Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
@@ -34,8 +59,6 @@ Hotkey, %Hotkey_緊急停止%, Label_緊急停止
 Hotkey, %Hotkey_快速輸入%, Label_快速輸入
 Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
 Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
-
-Gosub, Label_快捷鍵說明
 return
 
 ;==================全局變數區塊==================
@@ -528,6 +551,7 @@ Label_快速輸入:
 		)
 		; 自動打開記事本並帶入檔名
 		Run, notepad.exe "text_options.txt"
+		Return ; 結束
 	}
 	; 如果檔案存在，就顯示GUI選單
 	GoSub, Label_GoTextGui
@@ -1255,27 +1279,31 @@ Label_SaveHotkey:
 	else if (HotkeyName = "修改熱鍵")
 		Hotkey_修改熱鍵 := NewHotkey
 
-	; 將新的熱鍵設定寫入檔案
-	IniWrite, %Hotkey_結帳%, Hotkeys.ini, Hotkeys, 結帳
-	IniWrite, %Hotkey_帶入客訂單%, Hotkeys.ini, Hotkeys, 帶入客訂單
-	IniWrite, %Hotkey_直接列印發票%, Hotkeys.ini, Hotkeys, 直接列印發票
-	IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
-	IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
-	IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
-	IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
-	IniWrite, %Hotkey_修改熱鍵%, Hotkeys.ini, Hotkeys, 修改熱鍵
+    ; 將新的熱鍵設定寫入檔案
+    IniWrite, %Hotkey_結帳%, Hotkeys.ini, Hotkeys, 結帳
+    IniWrite, %Hotkey_帶入客訂單%, Hotkeys.ini, Hotkeys, 帶入客訂單
+    IniWrite, %Hotkey_直接列印發票%, Hotkeys.ini, Hotkeys, 直接列印發票
+    IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
+    IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
+    IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
+    IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
+    IniWrite, %Hotkey_修改熱鍵%, Hotkeys.ini, Hotkeys, 修改熱鍵
+    
+    ; 在熱鍵儲存後，將 RunStatus 的值設為 0
+    IniWrite, 0, Hotkeys.ini, Settings, RunStatus
 
-	; 重新綁定所有熱鍵
-	Hotkey, %Hotkey_結帳%, Label_結帳
-	Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
-	Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
-	Hotkey, %Hotkey_複製銷單%, Label_複製銷單
-	Hotkey, %Hotkey_緊急停止%, Label_緊急停止
-	Hotkey, %Hotkey_快速輸入%, Label_快速輸入
-	Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
-	Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
-	
-	; 關閉視窗並提示
-	Gui, Destroy
-	MsgBox, 0, 成功, 熱鍵已修改成功！
-	Return
+    ; 重新綁定所有熱鍵
+    Hotkey, %Hotkey_結帳%, Label_結帳
+    Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
+    Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
+    Hotkey, %Hotkey_複製銷單%, Label_複製銷單
+    Hotkey, %Hotkey_緊急停止%, Label_緊急停止
+    Hotkey, %Hotkey_快速輸入%, Label_快速輸入
+    Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
+    Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
+    
+    ; 關閉視窗並提示
+    Gui, Destroy
+    MsgBox, 0, 成功, 熱鍵已修改成功！下次啟動時將會再次顯示熱鍵說明。
+	Reload
+    Return
