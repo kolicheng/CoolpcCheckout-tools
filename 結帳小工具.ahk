@@ -8,6 +8,10 @@ Hotkey_緊急停止 = F8
 Hotkey_快速輸入 = ^E
 Hotkey_快捷鍵說明 = ^+H
 Hotkey_修改熱鍵 = ^+G
+Hotkey_全域設定 = ^+S
+
+; 設定 OSD 預設值
+OSD_enabled := 1 ; 預設開啟 OSD
 
 ; 檢查 Hotkeys.ini 檔案是否存在
 if FileExist("Hotkeys.ini") {
@@ -20,6 +24,13 @@ if FileExist("Hotkeys.ini") {
     IniRead, Hotkey_快速輸入, Hotkeys.ini, Hotkeys, 快速輸入
     IniRead, Hotkey_快捷鍵說明, Hotkeys.ini, Hotkeys, 快捷鍵說明
     IniRead, Hotkey_修改熱鍵, Hotkeys.ini, Hotkeys, 修改熱鍵
+    IniRead, Hotkey_全域設定, Hotkeys.ini, Hotkeys, 全域設定
+
+    ; 檢查 OSD 設定是否存在，如果沒有，就用預設值 1
+    IniRead, OSD_enabled, Hotkeys.ini, Settings, OSD
+    if (ErrorLevel) {
+        OSD_enabled := 1
+    }
 
     ; 檢查「已執行過」的變數是否存在
     IniRead, run_status, Hotkeys.ini, Settings, RunStatus
@@ -44,6 +55,10 @@ if FileExist("Hotkeys.ini") {
     IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
     IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
     IniWrite, %Hotkey_修改熱鍵%, Hotkeys.ini, Hotkeys, 修改熱鍵
+    IniWrite, %Hotkey_全域設定%, Hotkeys.ini, Hotkeys, 全域設定
+
+    ; 儲存 OSD 預設值到檔案
+    IniWrite, %OSD_enabled%, Hotkeys.ini, Settings, OSD
 
     ; 存入「已執行過」的變數
     IniWrite, 1, Hotkeys.ini, Settings, RunStatus
@@ -60,6 +75,7 @@ Hotkey, %Hotkey_緊急停止%, Label_緊急停止
 Hotkey, %Hotkey_快速輸入%, Label_快速輸入
 Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
 Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
+Hotkey, %Hotkey_全域設定%, Label_全域設定
 
 return
 
@@ -176,8 +192,12 @@ Label_結帳:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 	
-	Gui, Destroy
-	Gosub Finalcheck
+	; 如果 OSD_enabled 為 1，則執行 Finalcheck 函式
+	if (OSD_enabled = 1) {
+		Gosub, Finalcheck
+	} else {
+		Gui, Destroy
+	}
 
 	__title := "開發票-實收金額"
 	__text := ""
@@ -673,82 +693,82 @@ Label_GuiClose:
 ;==================快捷鍵說明模組功能==================
 Label_快捷鍵說明:
 	; 檢查視窗是否已經存在，如果存在就顯示
-	IfWinExist, 結帳小工具
-		Gui, Show
-	Else
-	{
-		; 建立一個轉換函式，將符號轉成文字
-		TransformHotkeySymbol(key)
+	Gui, Destroy
+
+	; 建立一個轉換函式，將符號轉成文字
+	TransformHotkeySymbol(key) {
+		hotkey_str := key
+		display_str := ""
+		
+		; 檢查並處理修飾鍵
+		if InStr(hotkey_str, "^")
 		{
-			hotkey_str := key
-			display_str := ""
-			
-			; 檢查並處理修飾鍵
-			if InStr(hotkey_str, "^")
-			{
-				display_str .= "CTRL + "
-				hotkey_str := StrReplace(hotkey_str, "^")
-			}
-			
-			if InStr(hotkey_str, "+")
-			{
-				display_str .= "SHIFT + "
-				hotkey_str := StrReplace(hotkey_str, "+")
-			}
-			
-			if InStr(hotkey_str, "!")
-			{
-				display_str .= "ALT + "
-				hotkey_str := StrReplace(hotkey_str, "!")
-			}
-			
-			if InStr(hotkey_str, "#")
-			{
-				display_str .= "WIN + "
-				hotkey_str := StrReplace(hotkey_str, "#")
-			}
-			
-			; 將剩下的主要按鍵轉成大寫
-			StringUpper, hotkey_str, hotkey_str
-			
-			; 將剩下的主要按鍵加到最後
-			display_str .= hotkey_str
-			
-			return display_str
+			display_str .= "CTRL + "
+			hotkey_str := StrReplace(hotkey_str, "^")
 		}
-
-		; 取得轉換後的熱鍵文字
-		Hotkey_結帳_顯示 := TransformHotkeySymbol(Hotkey_結帳)
-		Hotkey_帶入客訂單_顯示 := TransformHotkeySymbol(Hotkey_帶入客訂單)
-		Hotkey_直接列印發票_顯示 := TransformHotkeySymbol(Hotkey_直接列印發票)
-		Hotkey_複製銷單_顯示 := TransformHotkeySymbol(Hotkey_複製銷單)
-		Hotkey_緊急停止_顯示 := TransformHotkeySymbol(Hotkey_緊急停止)
-		Hotkey_快速輸入_顯示 := TransformHotkeySymbol(Hotkey_快速輸入)
-		Hotkey_快捷鍵說明_顯示 := TransformHotkeySymbol(Hotkey_快捷鍵說明)
-		Hotkey_修改熱鍵_顯示 := TransformHotkeySymbol(Hotkey_修改熱鍵)
-
-		; 建立視窗
-		Gui, Add, Text, x10 y10, 結帳
-		Gui, Add, Text, x130 y10, %Hotkey_結帳_顯示%
-		Gui, Add, Text, x10 y30, 帶入客訂單
-		Gui, Add, Text, x130 y30, %Hotkey_帶入客訂單_顯示%
-		Gui, Add, Text, x10 y50, 直接列印發票
-		Gui, Add, Text, x130 y50, %Hotkey_直接列印發票_顯示%
-		Gui, Add, Text, x10 y70, 複製銷單
-		Gui, Add, Text, x130 y70, %Hotkey_複製銷單_顯示%
-		Gui, Add, Text, x10 y90, 緊急停止
-		Gui, Add, Text, x130 y90, %Hotkey_緊急停止_顯示%
-		Gui, Add, Text, x10 y110, 快速輸入
-		Gui, Add, Text, x130 y110, %Hotkey_快速輸入_顯示%
-		Gui, Add, Text, x10 y130, 快捷鍵說明
-		Gui, Add, Text, x130 y130, %Hotkey_快捷鍵說明_顯示%
-		Gui, Add, Text, x10 y150, 修改熱鍵
-		Gui, Add, Text, x130 y150, %Hotkey_修改熱鍵_顯示%
-		Gui, Add, Button, x10 y180 w200 h30 gLabel_GuiClose, 關閉
-		Gui, Show, w250, 結帳小工具
+		
+		if InStr(hotkey_str, "+")
+		{
+			display_str .= "SHIFT + "
+			hotkey_str := StrReplace(hotkey_str, "+")
+		}
+		
+		if InStr(hotkey_str, "!")
+		{
+			display_str .= "ALT + "
+			hotkey_str := StrReplace(hotkey_str, "!")
+		}
+		
+		if InStr(hotkey_str, "#")
+		{
+			display_str .= "WIN + "
+			hotkey_str := StrReplace(hotkey_str, "#")
+		}
+		
+		; 將剩下的主要按鍵轉成大寫
+		StringUpper, hotkey_str, hotkey_str
+		
+		; 將剩下的主要按鍵加到最後
+		display_str .= hotkey_str
+		
+		return display_str
 	}
-	Return
 
+	; 取得轉換後的熱鍵文字
+	Hotkey_結帳_顯示 := TransformHotkeySymbol(Hotkey_結帳)
+	Hotkey_帶入客訂單_顯示 := TransformHotkeySymbol(Hotkey_帶入客訂單)
+	Hotkey_直接列印發票_顯示 := TransformHotkeySymbol(Hotkey_直接列印發票)
+	Hotkey_複製銷單_顯示 := TransformHotkeySymbol(Hotkey_複製銷單)
+	Hotkey_緊急停止_顯示 := TransformHotkeySymbol(Hotkey_緊急停止)
+	Hotkey_快速輸入_顯示 := TransformHotkeySymbol(Hotkey_快速輸入)
+	Hotkey_快捷鍵說明_顯示 := TransformHotkeySymbol(Hotkey_快捷鍵說明)
+	Hotkey_修改熱鍵_顯示 := TransformHotkeySymbol(Hotkey_修改熱鍵)
+	Hotkey_全域設定_顯示 := TransformHotkeySymbol(Hotkey_全域設定) ; 取得全域設定熱鍵文字
+
+	; 建立視窗
+	Gui, Add, Text, x10 y10, 結帳
+	Gui, Add, Text, x130 y10, %Hotkey_結帳_顯示%
+	Gui, Add, Text, x10 y30, 帶入客訂單
+	Gui, Add, Text, x130 y30, %Hotkey_帶入客訂單_顯示%
+	Gui, Add, Text, x10 y50, 直接列印發票
+	Gui, Add, Text, x130 y50, %Hotkey_直接列印發票_顯示%
+	Gui, Add, Text, x10 y70, 複製銷單
+	Gui, Add, Text, x130 y70, %Hotkey_複製銷單_顯示%
+	Gui, Add, Text, x10 y90, 緊急停止
+	Gui, Add, Text, x130 y90, %Hotkey_緊急停止_顯示%
+	Gui, Add, Text, x10 y110, 快速輸入
+	Gui, Add, Text, x130 y110, %Hotkey_快速輸入_顯示%
+	Gui, Add, Text, x10 y130, 快捷鍵說明
+	Gui, Add, Text, x130 y130, %Hotkey_快捷鍵說明_顯示%
+	Gui, Add, Text, x10 y150, 修改熱鍵
+	Gui, Add, Text, x130 y150, %Hotkey_修改熱鍵_顯示%
+	Gui, Add, Text, x10 y170, 全域設定
+	Gui, Add, Text, x130 y170, %Hotkey_全域設定_顯示%
+	Gui, Add, Button, x10 y190 w200 h30 gLabel_GuiClose, 關閉
+	Gui, Show, w250, 結帳小工具
+	
+	Return
+	
 ;==================緊急停止功能模組==================
 Label_緊急停止:
 	; 這個熱鍵是緊急停止，不受開關限制，隨時都能執行。
@@ -1119,7 +1139,7 @@ load:
         Atr := InStr(Haystack, Needle)
         if (Atr = 1) {
             break
-        }    
+        }   
         else{
             ToolTip, 等待客訂單載入畫面中...., 900, 300
             break
@@ -1212,14 +1232,12 @@ Print1:
     Return
 	
 ;================== 熱鍵修改功能模組 ==================
-
-
 Label_修改熱鍵:
 	Gui, Destroy
 	
 	; 建立熱鍵修改視窗
 	Gui, Add, Text, , 請選擇要修改的熱鍵：
-	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵
+	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵|全域設定 ; 新增全域設定選項
 	Gui, Add, Text, x10 y60, 目前熱鍵：
 	Gui, Add, Edit, x100 y60 w120 vCurrentHotkey ReadOnly
 	Gui, Add, Text, x10 y90, 輸入新熱鍵：
@@ -1253,6 +1271,8 @@ Label_UpdateHotkey:
 		hotkey_to_display := Hotkey_快捷鍵說明
 	else if (HotkeyName = "修改熱鍵")
 		hotkey_to_display := Hotkey_修改熱鍵
+	else if (HotkeyName = "全域設定")
+		hotkey_to_display := Hotkey_全域設定 ; 讀取全域設定熱鍵
 
 	; 呼叫函式將符號熱鍵轉成文字
 	display_text := TransformHotkeySymbol(hotkey_to_display)
@@ -1280,6 +1300,7 @@ Label_SaveHotkey:
 	Hotkey, %Hotkey_快速輸入%, Off
 	Hotkey, %Hotkey_快捷鍵說明%, Off
 	Hotkey, %Hotkey_修改熱鍵%, Off
+	Hotkey, %Hotkey_全域設定%, Off ; 解除全域設定舊熱鍵的綁定
 
 	; 根據選擇更新對應的熱鍵變數
 	if (HotkeyName = "結帳")
@@ -1298,6 +1319,8 @@ Label_SaveHotkey:
 		Hotkey_快捷鍵說明 := NewHotkey
 	else if (HotkeyName = "修改熱鍵")
 		Hotkey_修改熱鍵 := NewHotkey
+	else if (HotkeyName = "全域設定")
+		Hotkey_全域設定 := NewHotkey ; 更新全域設定熱鍵變數
 
     ; 將新的熱鍵設定寫入檔案
     IniWrite, %Hotkey_結帳%, Hotkeys.ini, Hotkeys, 結帳
@@ -1308,6 +1331,7 @@ Label_SaveHotkey:
     IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
     IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
     IniWrite, %Hotkey_修改熱鍵%, Hotkeys.ini, Hotkeys, 修改熱鍵
+    IniWrite, %Hotkey_全域設定%, Hotkeys.ini, Hotkeys, 全域設定 ; 儲存全域設定熱鍵
     
     ; 在熱鍵儲存後，將 RunStatus 的值設為 0
     IniWrite, 0, Hotkeys.ini, Settings, RunStatus
@@ -1321,8 +1345,57 @@ Label_SaveHotkey:
     Hotkey, %Hotkey_快速輸入%, Label_快速輸入
     Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
     Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
+    Hotkey, %Hotkey_全域設定%, Label_全域設定 ; 重新綁定全域設定熱鍵
     
     ; 關閉視窗並提示
     Gui, Destroy
     MsgBox, 0, 成功, 熱鍵已修改成功！下次啟動時將會再次顯示熱鍵說明。
 	Reload
+	Return
+	
+;==================全域設定模組==================
+Label_全域設定:
+	; 檢查開關，如果正在執行中，就立即停止。
+	if is_running_flag {
+		Return
+	}
+	; 打開開關，表示功能正在執行。
+	is_running_flag := 1
+	
+	; 檢查視窗是否已經存在，如果存在就顯示
+	Gui, Destroy
+
+	; 建立全域設定視窗
+	Gui, Add, Text, , 請設定 OSD 顯示：
+	; 根據 OSD_enabled 的設定來決定勾選狀態
+	if (OSD_enabled = 1) {
+		Gui, Add, Checkbox, vOSD_Setting Checked, 開啟 OSD
+	} else {
+		Gui, Add, Checkbox, vOSD_Setting, 開啟 OSD
+	}
+	
+	Gui, Add, Button, gLabel_SaveSettings w80 h30, 儲存
+	Gui, Add, Button, gLabel_GuiClose w80 h30, 取消
+	Gui, Show, w200, 全域設定
+	Return
+
+Label_SaveSettings:
+	Gui, Submit, NoHide
+	
+	; 讀取 checkbox 的狀態
+	if OSD_Setting {
+		OSD_enabled := 1
+	} else {
+		OSD_enabled := 0
+	}
+	
+	; 將新設定寫入檔案
+	IniWrite, %OSD_enabled%, Hotkeys.ini, Settings, OSD
+
+	; 關閉視窗並提示
+	Gui, Destroy
+	MsgBox, 0, 成功, 全域設定已儲存！
+	
+	; 關閉開關
+	is_running_flag := 0
+	Return
