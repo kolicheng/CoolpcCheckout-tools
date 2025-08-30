@@ -51,6 +51,7 @@ if FileExist("Hotkeys.ini") {
 }
 
 ;====================啟動熱鍵區塊====================
+
 Hotkey, %Hotkey_結帳%, Label_結帳
 Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
 Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
@@ -59,6 +60,7 @@ Hotkey, %Hotkey_緊急停止%, Label_緊急停止
 Hotkey, %Hotkey_快速輸入%, Label_快速輸入
 Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
 Hotkey, %Hotkey_修改熱鍵%, Label_修改熱鍵
+
 return
 
 ;==================全局變數區塊==================
@@ -127,6 +129,36 @@ Label_帶入客訂單:
 			Send, {F9}
 			break
 		}
+	}
+	
+	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+
+	Loop {
+		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
+		control = %OutputVar%
+		if (control != 銷貨單) {
+			ControlGetText, OutputVarmark, Edit38, ahk_class ThunderRT6MDIForm
+			ControlGetText, OutputVarsales1, Edit22, ahk_class ThunderRT6MDIForm
+			ControlGetText, OutputVarsales2, Edit23, ahk_class ThunderRT6MDIForm
+			EnvSet, mark, %OutputVarmark%
+			EnvSet, sales1, %OutputVarsales1%
+			EnvSet, sales2, %OutputVarsales2%
+			Gosub, markname
+			Sleep % 1000
+		}
+		break
+	}
+
+	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+
+	Loop {
+		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
+		control = %OutputVar%
+		if (control != 銷貨單) {
+			Sleep % 1000
+			Gosub, Salesname
+		}
+		break
 	}
 
 	Gosub, stoptip
@@ -1175,18 +1207,6 @@ Print1:
         }
     }
 
-    Loop {
-        ControlGet, OutputVar, Visible,, ThunderRT6CommandButton1, A
-        if (OutputVar = 1) {
-            SetControlDelay -1
-            ControlClick, ThunderRT6CommandButton1, ahk_class ThunderRT6FormDC,,,, NA
-            break
-        }
-        else {
-            Sleep % 100
-        }
-    }
-
     ToolTip, 發票流程完成, 900, 300
 
     Return
@@ -1306,4 +1326,3 @@ Label_SaveHotkey:
     Gui, Destroy
     MsgBox, 0, 成功, 熱鍵已修改成功！下次啟動時將會再次顯示熱鍵說明。
 	Reload
-    Return
