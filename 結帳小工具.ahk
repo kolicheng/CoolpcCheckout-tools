@@ -1363,14 +1363,26 @@ Print1:
         
         if (OutputVar = 1) {
             Send,{Esc}
-			;Send,{Left} 待確認
-			;Send,{ENTER} 待確認
             break
         }
         else {
             Sleep % 100
         }
     }
+	
+	WinWait, ahk_class ThunderRT6FormDC
+	Loop {
+		ControlGet, OutputVar, Visible,, ThunderRT6CommandButton6, A
+		if (OutputVar = 1) {
+			ControlClick, ThunderRT6CommandButton6, ahk_class ThunderRT6FormDC, 是,,, NA
+			Sleep % 700
+			break
+		}
+		else {
+			Sleep % 200
+		}
+	}
+	
 
     ToolTip, 發票流程完成, 900, 300
 
