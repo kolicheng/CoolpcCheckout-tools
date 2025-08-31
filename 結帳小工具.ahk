@@ -446,6 +446,8 @@ Simple_Checkout_Process:
 	; 關閉 OSD 視窗並停止更新
 	Gui, Destroy
 	SetTimer, UpdateOSD, Off
+	is_running_flag := 0
+
 	Return
 ; 新增子程序結束
 
