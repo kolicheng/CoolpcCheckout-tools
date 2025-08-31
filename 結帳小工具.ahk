@@ -203,8 +203,121 @@ Label_結帳:
 	
 	; 新增：判斷是否為簡易版結帳，如果是就執行簡易版流程
 	if (simple_checkout_enabled = 1) {
-		Gosub, Simple_Checkout_Process
-	} else {
+		MsgBox, 260,, 需要電子發票載具嗎？
+		IfMsgBox Yes
+		{
+			__title := "請輸入載具號碼"
+			__text := ""
+			InputBox, Haystack,%__title%,%__text%,,200,100
+			if (ErrorLevel = 1) {
+				Gosub, stop
+			}
+			inputA := Haystack
+			Needle := "/"
+			If InStr( inputA, Needle){
+				inputA := Haystack
+			}
+			else {
+				Gosub, stop
+			}
+		}
+		else {
+			inputA := ""
+		}
+		
+		__title := "請輸入統一編號"
+		__text := ""
+		InputBox, __invoice,%__title%,%__text%,,200,100
+		if (ErrorLevel = 1) {
+			Gosub, stop
+		}
+		
+		inputB := StrLen(__invoice)
+		
+		if (inputB = 8 or inputB = 0) {
+			inputB := __invoice
+		}
+		else {
+			Gosub, stop
+		}
+		
+		MsgBox, 260,, 刷卡嗎？
+		IfMsgBox Yes
+		{
+			__title := "請輸入卡號後4碼"
+			__text := ""
+			InputBox, inputC,%__title%,%__text%,,200,100
+			
+			;刷卡補備註
+			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
+			ControlSend, Edit30, {Right}, ahk_class ThunderRT6MDIForm
+			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
+			if (ErrorLevel = 1) {
+				Gosub, stop
+			}
+		}
+		else {
+			inputC := ""
+		}
+		
+		Gosub, run1
+
+		WinActivate ahk_class ThunderRT6MDIForm
+		Control, Check,, Button5, ahk_class ThunderRT6MDIForm, 銷貨單
+		ToolTip, 發票視窗開啟中..., 900, 300
+		WinWait, ahk_class ThunderRT6FormDC, 重載貨單明細
+		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 重載貨單明細
+		control = %OutputVar%
+		while (control := "重載貨單明細") {
+			ToolTip, 等待發票號碼產生中..., 900, 300
+			SetControlDelay 0
+			ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
+			loop {
+				ControlGetText, OutputVar, Edit5, ahk_class ThunderRT6FormDC
+				if StrLen(OutputVar) = 0 {
+					Sleep, 1000
+					continue
+				}
+				else {
+					ControlGetText, OutputVarEdit48, Edit48, ahk_class ThunderRT6FormDC
+					if StrLen(OutputVarEdit48) = 0 {
+						Control, EditPaste, %inputA%, Edit48, ahk_class ThunderRT6FormDC
+					}
+					ControlGetText, OutputVaredit2, Edit2, ahk_class ThunderRT6FormDC
+					if StrLen(OutputVaredit2) = 0 {
+						Control, EditPaste, %inputB%, Edit2, ahk_class ThunderRT6FormDC
+					}
+					ControlGetText, OutputVarEdit14, Edit14, ahk_class ThunderRT6FormDC
+					if (OutputVarEdit14 = "") {
+						Control, EditPaste, %inputC%%A_Space%, Edit14, ahk_class ThunderRT6FormDC
+					}
+					break
+				}
+			}
+			break
+		}
+
+		Sleep % 100
+		Send,{F9}
+		Send, {Esc}
+		Gosub, slip
+		Send,{F9}
+
+		Gosub, Print
+		Gosub, slip
+
+		ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
+		Send, {Enter}
+
+		Gosub, stoptip
+
+		; 關閉 OSD 視窗並停止更新
+		Gui, Destroy
+		SetTimer, UpdateOSD, Off
+		is_running_flag := 0
+		Return
+	}
+	else {
 		; 如果 OSD_enabled 為 1，則執行 Finalcheck 函式
 		if (OSD_enabled = 1) {
 			Gosub, Finalcheck
@@ -327,129 +440,9 @@ Label_結帳:
 		; 關閉 OSD 視窗並停止更新
 		Gui, Destroy
 		SetTimer, UpdateOSD, Off
+		is_running_flag := 0
+		Return
 	}
-
-	; 關閉開關，表示功能執行完畢。
-	is_running_flag := 0
-	Return
-
-; 新增：簡易版結帳的子程序
-Simple_Checkout_Process:
-	MsgBox, 260,, 需要電子發票載具嗎？
-	IfMsgBox Yes
-	{
-		__title := "請輸入載具號碼"
-		__text := ""
-		InputBox, Haystack,%__title%,%__text%,,200,100
-		if (ErrorLevel = 1) {
-			Gosub, stop
-		}
-		inputA := Haystack
-		Needle := "/"
-		If InStr( inputA, Needle){
-			inputA := Haystack
-		}
-		else {
-			Gosub, stop
-		}
-	}
-	else {
-		inputA := ""
-	}
-	
-	__title := "請輸入統一編號"
-	__text := ""
-	InputBox, __invoice,%__title%,%__text%,,200,100
-	if (ErrorLevel = 1) {
-		Gosub, stop
-	}
-	
-	inputB := StrLen(__invoice)
-	
-	if (inputB = 8 or inputB = 0) {
-		inputB := __invoice
-	}
-	else {
-		Gosub, stop
-	}
-	
-	MsgBox, 260,, 刷卡嗎？
-	IfMsgBox Yes
-	{
-		__title := "請輸入卡號後4碼"
-		__text := ""
-		InputBox, inputC,%__title%,%__text%,,200,100
-		
-		;刷卡補備註
-		ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
-		ControlSend, Edit30, {Right}, ahk_class ThunderRT6MDIForm
-		Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
-		if (ErrorLevel = 1) {
-			Gosub, stop
-		}
-	}
-	else {
-		inputC := ""
-	}
-	
-	Gosub, run1
-
-	WinActivate ahk_class ThunderRT6MDIForm
-	Control, Check,, Button5, ahk_class ThunderRT6MDIForm, 銷貨單
-	ToolTip, 發票視窗開啟中..., 900, 300
-	WinWait, ahk_class ThunderRT6FormDC, 重載貨單明細
-	WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 重載貨單明細
-	control = %OutputVar%
-	while (control := "重載貨單明細") {
-		ToolTip, 等待發票號碼產生中..., 900, 300
-		SetControlDelay 0
-		ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
-		loop {
-			ControlGetText, OutputVar, Edit5, ahk_class ThunderRT6FormDC
-			if StrLen(OutputVar) = 0 {
-				Sleep, 1000
-				continue
-			}
-			else {
-				ControlGetText, OutputVarEdit48, Edit48, ahk_class ThunderRT6FormDC
-				if StrLen(OutputVarEdit48) = 0 {
-					Control, EditPaste, %inputA%, Edit48, ahk_class ThunderRT6FormDC
-				}
-				ControlGetText, OutputVaredit2, Edit2, ahk_class ThunderRT6FormDC
-				if StrLen(OutputVaredit2) = 0 {
-					Control, EditPaste, %inputB%, Edit2, ahk_class ThunderRT6FormDC
-				}
-				ControlGetText, OutputVarEdit14, Edit14, ahk_class ThunderRT6FormDC
-				if (OutputVarEdit14 = "") {
-					Control, EditPaste, %inputC%%A_Space%, Edit14, ahk_class ThunderRT6FormDC
-				}
-				break
-			}
-		}
-		break
-	}
-
-	Sleep % 100
-	Send,{F9}
-	Send, {Esc}
-	Gosub, slip
-	Send,{F9}
-
-	Gosub, Print
-	Gosub, slip
-
-	ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
-	Send, {Enter}
-
-	Gosub, stoptip
-
-	; 關閉 OSD 視窗並停止更新
-	Gui, Destroy
-	SetTimer, UpdateOSD, Off
-	is_running_flag := 0
-
-	Return
-; 新增子程序結束
 
 ;==================直接列印發票功能模組==================
 Label_直接列印發票:
