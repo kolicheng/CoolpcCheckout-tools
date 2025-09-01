@@ -155,41 +155,8 @@ Label_帶入客訂單:
 			break
 		}
 	}
-	
-	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
-
-	Loop {
-		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
-		control = %OutputVar%
-		if (control != 銷貨單) {
-			ControlGetText, OutputVarmark, Edit38, ahk_class ThunderRT6MDIForm
-			ControlGetText, OutputVarsales1, Edit22, ahk_class ThunderRT6MDIForm
-			ControlGetText, OutputVarsales2, Edit23, ahk_class ThunderRT6MDIForm
-			EnvSet, mark, %OutputVarmark%
-			EnvSet, sales1, %OutputVarsales1%
-			EnvSet, sales2, %OutputVarsales2%
-			Gosub, markname
-			Sleep % 1000
-		}
-		break
-	}
-
-	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
-
-	Loop {
-		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
-		control = %OutputVar%
-		if (control != 銷貨單) {
-			Sleep % 1000
-			Gosub, Salesname
-		}
-		break
-	}
 
 	Gosub, stoptip
-	
-	; 關閉開關，表示功能執行完畢。
-	is_running_flag := 0
 	Return
 
 ;==================開發票結帳功能模組==================
@@ -201,9 +168,13 @@ Label_結帳:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 	
-	; 新增：判斷是否為簡易版結帳，如果是就執行簡易版流程
+	if (OSD_enabled = 1) {
+		Gosub, Finalcheck
+	}
+	
 	if (simple_checkout_enabled = 1) {
-		MsgBox, 260,, 需要電子發票載具嗎？
+		;簡易版流程
+		MsgBox, 260, 結帳小工具, 需要電子發票載具嗎？
 		IfMsgBox Yes
 		{
 			__title := "請輸入載具號碼"
@@ -231,24 +202,19 @@ Label_結帳:
 		if (ErrorLevel = 1) {
 			Gosub, stop
 		}
-		
 		inputB := StrLen(__invoice)
-		
 		if (inputB = 8 or inputB = 0) {
 			inputB := __invoice
 		}
 		else {
 			Gosub, stop
 		}
-		
-		MsgBox, 260,, 刷卡嗎？
+		MsgBox, 260, 結帳小工具, 刷卡嗎？
 		IfMsgBox Yes
 		{
 			__title := "請輸入卡號後4碼"
 			__text := ""
 			InputBox, inputC,%__title%,%__text%,,200,100
-			
-			;刷卡補備註
 			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
 			ControlSend, Edit30, {Right}, ahk_class ThunderRT6MDIForm
 			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
@@ -259,9 +225,7 @@ Label_結帳:
 		else {
 			inputC := ""
 		}
-		
-		Gosub, run1
-
+		gosub, run1
 		WinActivate ahk_class ThunderRT6MDIForm
 		Control, Check,, Button5, ahk_class ThunderRT6MDIForm, 銷貨單
 		ToolTip, 發票視窗開啟中..., 900, 300
@@ -279,16 +243,16 @@ Label_結帳:
 					continue
 				}
 				else {
-					ControlGetText, OutputVarEdit48, Edit48, ahk_class ThunderRT6FormDC
-					if StrLen(OutputVarEdit48) = 0 {
+					ControlGetText, OutputVaredit48, Edit48, ahk_class ThunderRT6FormDC
+					if StrLen(OutputVaredit48) = 0 {
 						Control, EditPaste, %inputA%, Edit48, ahk_class ThunderRT6FormDC
 					}
 					ControlGetText, OutputVaredit2, Edit2, ahk_class ThunderRT6FormDC
 					if StrLen(OutputVaredit2) = 0 {
 						Control, EditPaste, %inputB%, Edit2, ahk_class ThunderRT6FormDC
 					}
-					ControlGetText, OutputVarEdit14, Edit14, ahk_class ThunderRT6FormDC
-					if (OutputVarEdit14 = "") {
+					ControlGetText, OutputVaredit14, Edit14, ahk_class ThunderRT6FormDC
+					if (OutputVaredit14 = "") {
 						Control, EditPaste, %inputC%%A_Space%, Edit14, ahk_class ThunderRT6FormDC
 					}
 					break
@@ -296,35 +260,25 @@ Label_結帳:
 			}
 			break
 		}
-
 		Sleep % 100
 		Send,{F9}
 		Send, {Esc}
 		Gosub, slip
 		Send,{F9}
-
+	
 		Gosub, Print
 		Gosub, slip
-
+	
 		ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
 		Send, {Enter}
-
-		Gosub, stoptip
-
-		; 關閉 OSD 視窗並停止更新
-		Gui, Destroy
-		SetTimer, UpdateOSD, Off
-		is_running_flag := 0
-		Return
-	}
-	else {
-		; 如果 OSD_enabled 為 1，則執行 Finalcheck 函式
 		if (OSD_enabled = 1) {
-			Gosub, Finalcheck
-		} else {
-			Gui, Destroy
+			SetTimer, UpdateOSD, Off
 		}
-	
+		Gosub, stoptip
+		Return	
+	}	
+	else {
+		;完整版流程
 		__title := "開發票-實收金額"
 		__text := ""
 		InputBox, inputE,%__title%,%__text%,,200,100
@@ -434,13 +388,12 @@ Label_結帳:
 	
 		ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
 		Send, {Enter}
-	
+
 		Gosub, stoptip
-	
-		; 關閉 OSD 視窗並停止更新
 		Gui, Destroy
-		SetTimer, UpdateOSD, Off
-		is_running_flag := 0
+		if (OSD_enabled = 1) {
+			SetTimer, UpdateOSD, Off
+		}
 		Return
 	}
 
@@ -520,9 +473,7 @@ Label_直接列印發票:
 
 	Gosub, Print1
 	Gosub, stoptip
-	
-	; 關閉開關，表示功能執行完畢。
-	is_running_flag := 0
+
 	Return
 
 ;==================拷貝銷單功能模組==================
@@ -695,8 +646,6 @@ Label_複製銷單:
 
 	Gosub, stoptip
 
-	; 關閉開關，表示功能執行完畢。
-	is_running_flag := 0
 	Return
 
 ;==================文字輸入快捷鍵模組功能==================
@@ -1205,25 +1154,23 @@ stoptip:
     ToolTip, 動作完成!!!!, 900, 300
     Sleep % 5000
     ToolTip
+	is_running_flag := 0
     Return
 
 ;==================判斷銷單狀態==================
 slip:
     ToolTip, 銷貨單視窗確認中..., 900, 300
-    loop 
-{
+    loop {
         WinGet, ActiveWindowID, ID, A
         WinGetText, VisibleText, ahk_id %ActiveWindowID%
-        if (SubStr(VisibleText, 1, 3) = "銷貨單")
-    {
-    break
-    }
-    else
-    {
-    ToolTip, 等待銷單視窗開啟中...., 900, 300
-    Sleep % 100
-    }
-    }
+        if (SubStr(VisibleText, 1, 3) = "銷貨單") {
+    		break
+		}
+		else {
+			ToolTip, 等待銷單視窗開啟中...., 900, 300
+			Sleep % 100
+		}
+	}
     Return
 
 ;==================判斷銷單狀態（判斷詳查視窗）==================
@@ -1331,7 +1278,6 @@ Print:
         if (OutputVar = 1) {
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton6, ahk_class ThunderRT6FormDC,,,, NA
-           
             break
         }
         else {
@@ -1370,22 +1316,7 @@ Print1:
         }
     }
 	
-	WinWait, ahk_class ThunderRT6FormDC
-	Loop {
-		ControlGet, OutputVar, Visible,, ThunderRT6CommandButton6, A
-		if (OutputVar = 1) {
-			ControlClick, ThunderRT6CommandButton6, ahk_class ThunderRT6FormDC, 是,,, NA
-			Sleep % 700
-			break
-		}
-		else {
-			Sleep % 200
-		}
-	}
-	
-
     ToolTip, 發票流程完成, 900, 300
-
     Return
 	
 ;================== 熱鍵修改功能模組 ==================
