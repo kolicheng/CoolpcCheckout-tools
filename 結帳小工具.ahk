@@ -4,6 +4,7 @@ Hotkey_結帳 = Pause
 Hotkey_帶入客訂單 = Insert
 Hotkey_直接列印發票 = ^+C
 Hotkey_複製銷單 = ScrollLock
+Hotkey_未產生發票銷退 = ^D
 Hotkey_緊急停止 = F8
 Hotkey_快速輸入 = ^E
 Hotkey_快捷鍵說明 = ^+H
@@ -21,6 +22,7 @@ if FileExist("Hotkeys.ini") {
     IniRead, Hotkey_帶入客訂單, Hotkeys.ini, Hotkeys, 帶入客訂單
     IniRead, Hotkey_直接列印發票, Hotkeys.ini, Hotkeys, 直接列印發票
     IniRead, Hotkey_複製銷單, Hotkeys.ini, Hotkeys, 複製銷單
+    IniRead, Hotkey_未產生發票銷退, Hotkeys.ini, Hotkeys, 未產生發票銷退
     IniRead, Hotkey_緊急停止, Hotkeys.ini, Hotkeys, 緊急停止
     IniRead, Hotkey_快速輸入, Hotkeys.ini, Hotkeys, 快速輸入
     IniRead, Hotkey_快捷鍵說明, Hotkeys.ini, Hotkeys, 快捷鍵說明
@@ -58,6 +60,7 @@ if FileExist("Hotkeys.ini") {
     IniWrite, %Hotkey_帶入客訂單%, Hotkeys.ini, Hotkeys, 帶入客訂單
     IniWrite, %Hotkey_直接列印發票%, Hotkeys.ini, Hotkeys, 直接列印發票
     IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
+    IniWrite, %Hotkey_未產生發票銷退%, Hotkeys.ini, Hotkeys, 未產生發票銷退
     IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
     IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
     IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
@@ -80,6 +83,7 @@ Hotkey, %Hotkey_結帳%, Label_結帳
 Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
 Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
 Hotkey, %Hotkey_複製銷單%, Label_複製銷單
+Hotkey, %Hotkey_未產生發票銷退%, Label_未產生發票銷退
 Hotkey, %Hotkey_緊急停止%, Label_緊急停止
 Hotkey, %Hotkey_快速輸入%, Label_快速輸入
 Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
@@ -128,17 +132,17 @@ Label_帶入客訂單:
 
 	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
 		control = %OutputVar%
 		if (control != 銷貨單) {
-			Sleep % 100
+			Sleep, 100
 			ControlFocus, Edit36, ahk_class ThunderRT6MDIForm
-			Sleep % 100
+			Sleep, 100
 			ControlSetText , Edit36,, ahk_class ThunderRT6MDIForm
-			Sleep % 100
+			Sleep, 100
 			Control, EditPaste, %inputH%, Edit36, ahk_class ThunderRT6MDIForm
-			Sleep % 100
+			Sleep, 100
 			ControlSend, Edit36, {Enter}, ahk_class ThunderRT6MDIForm
 			break
 		}
@@ -146,11 +150,11 @@ Label_帶入客訂單:
 
 	WinWait, ahk_class ThunderRT6FormDC, 區域選取
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		ControlGetFocus, focused_control, ahk_class ThunderRT6FormDC, 區域選取
 		control = %focused_control%
 		if (control != TG70.ApexGridOleDB32.202) {
-			Sleep % 100
+			Sleep, 100
 			Send, {F9}
 			break
 		}
@@ -260,22 +264,6 @@ Label_結帳:
 			}
 			break
 		}
-		Sleep % 100
-		Send,{F9}
-		Send, {Esc}
-		Gosub, slip
-		Send,{F9}
-	
-		Gosub, Print
-		Gosub, slip
-	
-		ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
-		Send, {Enter}
-		if (OSD_enabled = 1) {
-			SetTimer, UpdateOSD, Off
-		}
-		Gosub, stoptip
-		Return	
 	}	
 	else {
 		;完整版流程
@@ -289,7 +277,7 @@ Label_結帳:
 		A := inputE
 		B := StrReplace(OutputVar, "," )
 		Var := A - B
-		MsgBox, 260, "結帳小工具, 需要電子發票載具嗎？"
+		MsgBox, 260, 結帳小工具, 需要電子發票載具嗎？
 		IfMsgBox Yes
 		{
 			__title := "請輸入載具號碼"
@@ -330,7 +318,7 @@ Label_結帳:
 			__title := "請輸入卡號後4碼"
 			__text := ""
 			InputBox, inputC,%__title%,%__text%,,200,100
-			ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
+			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
 			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
 			if (ErrorLevel = 1) {
 				Gosub, stop
@@ -376,26 +364,25 @@ Label_結帳:
 			}
 			break
 		}
-	
-		Sleep % 100
-		Send,{F9}
-		Send, {Esc}
-		Gosub, slip
-		Send,{F9}
-	
-		Gosub, Print
-		Gosub, slip
-	
-		ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
-		Send, {Enter}
-
-		Gosub, stoptip
-		Gui, Destroy
-		if (OSD_enabled = 1) {
-			SetTimer, UpdateOSD, Off
-		}
-		Return
 	}
+	
+	Sleep, 100
+	Send,{F9}
+	Send, {Esc}
+	Gosub, slip
+
+	Send,{F9}
+	Gosub, Print
+	Gosub, slip
+	
+	ControlFocus, Edit52, ahk_class ThunderRT6MDIForm
+	Send, {Enter}
+
+	Gosub, stoptip
+	if (OSD_enabled = 1) {
+		SetTimer, UpdateOSD, Off
+	}
+	Return
 
 ;==================直接列印發票功能模組==================
 Label_直接列印發票:
@@ -431,22 +418,22 @@ Label_直接列印發票:
 
 	WinWait, ahk_class ThunderRT6FormDC, 軟體類別
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 軟體類別
 		control = %OutputVar%
 		if (control != 軟體類別) {
-			Sleep % 100
+			Sleep, 100
 			ControlSetText , Edit22, %    /  /  , ahk_class ThunderRT6FormDC
-			Sleep % 100
+			Sleep, 100
 			Control, EditPaste, %inputG%, Edit24, ahk_class ThunderRT6FormDC
-			Sleep % 100
+			Sleep, 100
 			Control, EditPaste, %inputG%, Edit25, ahk_class ThunderRT6FormDC
-			Sleep % 100
+			Sleep, 100
 			Send, {F9}
 			break
 		}
 		else {
-			Sleep % 100
+			Sleep, 100
 		}
 
 	}
@@ -460,9 +447,9 @@ Label_直接列印發票:
 		Needle := "銷貨單"
 		Atr := InStr(Haystack, Needle)
 		if (Atr = 1) {
-			Sleep % 100
+			Sleep, 100
 			Send,{F7}
-			Sleep % 100
+			Sleep, 100
 			break
 		}
 		else{
@@ -515,22 +502,22 @@ Label_複製銷單:
 
 	WinWait, ahk_class ThunderRT6FormDC, 軟體類別
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 軟體類別
 		control = %OutputVar%
 		if (control != 軟體類別) {
-			Sleep % 100
+			Sleep, 100
 			ControlSetText , Edit22, %    /  /  , ahk_class ThunderRT6FormDC
-			Sleep % 100
+			Sleep, 100
 			Control, EditPaste, %inputR%, Edit24, ahk_class ThunderRT6FormDC
-			Sleep % 100
+			Sleep, 100
 			Control, EditPaste, %inputR%, Edit25, ahk_class ThunderRT6FormDC
-			Sleep % 100
+			Sleep, 100
 			Send, {F9}
 			break
 		}
 		else {
-			Sleep % 100
+			Sleep, 100
 		}
 	}
 
@@ -540,11 +527,11 @@ Label_複製銷單:
 	Gosub, main1
 
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm, 銷貨單
 		control = %OutputVar%
 		if (control = 1) {
-			Sleep % 100
+			Sleep, 100
 			Send, !C
 			break
 		}
@@ -553,16 +540,16 @@ Label_複製銷單:
 	WinWait, ahk_class ThunderRT6FormDC
 
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 產生單據日期
 		control = %OutputVar%
 		if (control != 產生單據日期) {
-			Sleep % 100
+			Sleep, 100
 			SetControlDelay -1
 			ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
-			Sleep % 100
+			Sleep, 100
 			Control, EditPaste, %inputR%, Edit3, ahk_class ThunderRT6FormDC
-			Sleep % 100
+			Sleep, 100
 			Control, Check,, Button1, ahk_class ThunderRT6FormDC
 			break
 		}
@@ -571,19 +558,19 @@ Label_複製銷單:
 	WinWait, ahk_class ThunderRT6FormDC
 
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		PixelGetColor, color, 468, 331 , Alt
 		control = %color%
 		if (control = 0xD77800) {
-			Sleep % 100
+			Sleep, 100
 			CoordMode, Mouse , Screen
 			__ClickX:=524
 			__ClickY:=458
 			__ClickTimes:=1
 			Click %__ClickX%, %__ClickY%, %__ClickTimes%
-			Sleep % 100
+			Sleep, 100
 			Send, {F9}
-			Sleep % 100
+			Sleep, 100
 			break
 		}
 	}
@@ -591,11 +578,11 @@ Label_複製銷單:
 	WinWait, ahk_class ThunderRT6FormDC, 區域選取
 
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		ControlGetFocus, focused_control, ahk_class ThunderRT6FormDC, 區域選取
 		control = %focused_control%
 		if (control != TG70.ApexGridOleDB32.202) {
-			Sleep % 100
+			Sleep, 100
 			Send, {F9}
 			break
 		}
@@ -614,7 +601,7 @@ Label_複製銷單:
 			EnvSet, sales1, %OutputVarsales1%
 			EnvSet, sales2, %OutputVarsales2%
 			Gosub, markname
-			Sleep % 1000
+			Sleep, 1000
 		}
 		break
 	}
@@ -625,7 +612,7 @@ Label_複製銷單:
 		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
 		control = %OutputVar%
 		if (control != 銷貨單) {
-			Sleep % 1000
+			Sleep, 1000
 			Gosub, Salesname
 		}
 		break
@@ -634,11 +621,11 @@ Label_複製銷單:
 	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
 
 	Loop {
-		Sleep % 100
+		Sleep, 100
 		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
 		control = %OutputVar%
 		if (control != 銷貨單) {
-			Sleep % 100
+			Sleep, 100
 			Control, EditPaste, 原銷單%inputR%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm, 銷貨單
 			break
 		}
@@ -800,33 +787,36 @@ Label_快捷鍵說明:
 	Hotkey_帶入客訂單_顯示 := TransformHotkeySymbol(Hotkey_帶入客訂單)
 	Hotkey_直接列印發票_顯示 := TransformHotkeySymbol(Hotkey_直接列印發票)
 	Hotkey_複製銷單_顯示 := TransformHotkeySymbol(Hotkey_複製銷單)
+	Hotkey_未產生發票銷退_顯示 := TransformHotkeySymbol(Hotkey_未產生發票銷退)
 	Hotkey_緊急停止_顯示 := TransformHotkeySymbol(Hotkey_緊急停止)
 	Hotkey_快速輸入_顯示 := TransformHotkeySymbol(Hotkey_快速輸入)
 	Hotkey_快捷鍵說明_顯示 := TransformHotkeySymbol(Hotkey_快捷鍵說明)
 	Hotkey_修改熱鍵_顯示 := TransformHotkeySymbol(Hotkey_修改熱鍵)
 	Hotkey_全域設定_顯示 := TransformHotkeySymbol(Hotkey_全域設定)
 
-	; 建立視窗，調整位置與尺寸
+	; 建立視窗，調整位置與尺寸（更緊湊且不重疊）
 	Gui, Add, Text, x20 y20 w100 h24, 結帳
-	Gui, Add, Text, x130 y20 w100 h24, %Hotkey_結帳_顯示%
+	Gui, Add, Text, x130 y20 w110 h24, %Hotkey_結帳_顯示%
 	Gui, Add, Text, x20 y50 w100 h24, 帶入客訂單
-	Gui, Add, Text, x130 y50 w100 h24, %Hotkey_帶入客訂單_顯示%
+	Gui, Add, Text, x130 y50 w110 h24, %Hotkey_帶入客訂單_顯示%
 	Gui, Add, Text, x20 y80 w100 h24, 直接列印發票
-	Gui, Add, Text, x130 y80 w100 h24, %Hotkey_直接列印發票_顯示%
+	Gui, Add, Text, x130 y80 w110 h24, %Hotkey_直接列印發票_顯示%
 	Gui, Add, Text, x20 y110 w100 h24, 複製銷單
-	Gui, Add, Text, x130 y110 w100 h24, %Hotkey_複製銷單_顯示%
-	Gui, Add, Text, x20 y140 w100 h24, 緊急停止
-	Gui, Add, Text, x130 y140 w100 h24, %Hotkey_緊急停止_顯示%
-	Gui, Add, Text, x20 y170 w100 h24, 快速輸入
-	Gui, Add, Text, x130 y170 w100 h24, %Hotkey_快速輸入_顯示%
-	Gui, Add, Text, x20 y200 w100 h24, 快捷鍵說明
-	Gui, Add, Text, x130 y200 w100 h24, %Hotkey_快捷鍵說明_顯示%
-	Gui, Add, Text, x20 y230 w100 h24, 修改熱鍵
-	Gui, Add, Text, x130 y230 w100 h24, %Hotkey_修改熱鍵_顯示%
-	Gui, Add, Text, x20 y260 w100 h24, 全域設定
-	Gui, Add, Text, x130 y260 w100 h24, %Hotkey_全域設定_顯示%
-	Gui, Add, Button, x20 y300 w210 h32 gLabel_GuiClose, 關閉
-	Gui, Show, w260 h350, 結帳小工具
+	Gui, Add, Text, x130 y110 w110 h24, %Hotkey_複製銷單_顯示%
+	Gui, Add, Text, x20 y140 w100 h24, 未產生發票銷退
+	Gui, Add, Text, x130 y140 w110 h24, %Hotkey_未產生發票銷退_顯示%
+	Gui, Add, Text, x20 y170 w100 h24, 緊急停止
+	Gui, Add, Text, x130 y170 w110 h24, %Hotkey_緊急停止_顯示%
+	Gui, Add, Text, x20 y200 w100 h24, 快速輸入
+	Gui, Add, Text, x130 y200 w110 h24, %Hotkey_快速輸入_顯示%
+	Gui, Add, Text, x20 y230 w100 h24, 快捷鍵說明
+	Gui, Add, Text, x130 y230 w110 h24, %Hotkey_快捷鍵說明_顯示%
+	Gui, Add, Text, x20 y260 w100 h24, 修改熱鍵
+	Gui, Add, Text, x130 y260 w110 h24, %Hotkey_修改熱鍵_顯示%
+	Gui, Add, Text, x20 y290 w100 h24, 全域設定
+	Gui, Add, Text, x130 y290 w110 h24, %Hotkey_全域設定_顯示%
+	Gui, Add, Button, x20 y330 w220 h32 gLabel_GuiClose, 關閉
+	Gui, Show, w270 h380, 結帳小工具
 
 	Return
 	
@@ -904,7 +894,7 @@ Salesname:
             break
         }
         else {
-            Sleep % 100
+            Sleep, 100
         }
     }
     EnvSet, sales1
@@ -958,7 +948,6 @@ gosales1:
         Needle := "銷貨單"
         Atr := InStr(Haystack, Needle)
         if (Atr = 1) {
-      
             break
         }
         else {
@@ -969,9 +958,9 @@ gosales1:
             Atr := InStr(Haystack, Needle)
        
             while not (Atr = 1) {
-                Sleep % 100
+                Sleep, 100
                 Send, {F12}
-                Sleep % 100
+                Sleep, 100
                 break
             }
          
@@ -980,7 +969,7 @@ gosales1:
             Needle := "銷貨單"
             Atr1 := InStr(Haystack, Needle)
             while not (Atr1 = 1) {
-                Sleep % 100
+                Sleep, 100
                 Send, {F10}l11
   
                 break
@@ -1007,7 +996,7 @@ gosales:
                 ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
                 if (OutputVar = 1) {
        
-                    Sleep % 100
+                    Sleep, 100
                     Send,{Esc}
                     Sleep % 500
                     Gosub, confirm
@@ -1029,9 +1018,9 @@ gosales:
             Needle := "功能快捷視窗"
             Atr := InStr(Haystack, Needle)
             while not (Atr = 1) {
-                Sleep % 100
+                Sleep, 100
                 Send, {F12}
-                Sleep % 100
+                Sleep, 100
                 break
             }
  
@@ -1040,7 +1029,7 @@ gosales:
             Needle := "銷貨單"
             Atr1 := InStr(Haystack, Needle)
             while not (Atr1 = 1) {
-                Sleep % 100
+                Sleep, 100
            
                 Send, {F10}l11
                 break
@@ -1050,7 +1039,6 @@ gosales:
     }
     
     ToolTip, 開啟銷單完成, 900, 300
-    
     Return
 
 ;==================停止提示視窗功能==================
@@ -1071,7 +1059,7 @@ main1:
         ToolTip, 等待銷單為新增狀態中...., 900, 300
         ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
         if (OutputVar = 0) {
-            Sleep % 100
+            Sleep, 100
             Send,{F2}
            
             break
@@ -1094,7 +1082,7 @@ main1:
                         ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
                  
                         if (OutputVar = 0) {
-                            Sleep % 100
+                            Sleep, 100
                             Send,{F2}
                             break
    
@@ -1107,37 +1095,34 @@ main1:
     }
 
     ToolTip, 銷單新增完成, 900, 300
-
-    
-Return
+	Return
 
 ;==================檢查銷貨單狀態功能（其他視窗）==================
 main2:
     Gosub, slip
     ToolTip, 判斷銷貨單為退出狀態中..., 900, 300
     Loop {
-    ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
-    if (OutputVar = 1) {
-    loop {
-    WinGetText,Str,A
-    Haystack := Str
-    Needle := "銷貨單"
-    Atr := InStr(Haystack, Needle)
-    if (Atr = 1) {
-    Sleep % 100
-    Send,{Esc}
-    Sleep % 500
-    break
-    }
-    else{
-  
-    Sleep % 100
-    ToolTip, 等待銷單為退出狀態中...., 900, 300
-    break
-    }
-    }
-    }
-    break
+		ControlGet, OutputVar, Visible,, Edit91, ahk_class ThunderRT6MDIForm
+		if (OutputVar = 1) {
+			loop {
+				WinGetText,Str,A
+				Haystack := Str
+				Needle := "銷貨單"
+				Atr := InStr(Haystack, Needle)
+				if (Atr = 1) {
+					Sleep, 100
+					Send,{Esc}
+					Sleep % 500
+					break
+				}
+				else{
+					Sleep, 100
+					ToolTip, 等待銷單為退出狀態中...., 900, 300
+					break
+				}
+			}
+		}
+		break
     }
     ToolTip, 銷單退出完成, 900, 300
     Return
@@ -1168,7 +1153,7 @@ slip:
 		}
 		else {
 			ToolTip, 等待銷單視窗開啟中...., 900, 300
-			Sleep % 100
+			Sleep, 100
 		}
 	}
     Return
@@ -1184,9 +1169,9 @@ find:
     Needle := " 審核確認"
     Atr := InStr(Haystack, Needle)
     while not (Atr = 1) {
-        Sleep % 100
+        Sleep, 100
         Send,{F5}
-        Sleep % 100
+        Sleep, 100
         break
     }
 
@@ -1197,7 +1182,6 @@ receipt:
     ToolTip, 發票視窗開啟中..., 900, 300
     loop {
         WinGetText,Str,A
-    
         Haystack := Str
         Needle := "多選 "
         Atr := InStr(Haystack, Needle)
@@ -1223,7 +1207,6 @@ load:
         if (Atr = 1) {
             break
         }   
-   
         else{
             ToolTip, 等待客訂單載入畫面中...., 900, 300
             break
@@ -1239,22 +1222,20 @@ confirm:
         Haystack := Str
         Needle := "確定"
         Atr := InStr(Haystack, Needle)
- 
         if (Atr = 1) {
-            Sleep % 100
+            Sleep, 100
             SetControlDelay -1
             ControlClick, ThunderRT6CommandButton1, ahk_class ThunderRT6FormDC ,確定,,, NA
         break
         }
         else{
-            Sleep % 100
+            Sleep, 100
        
             continue
         }
     }
 
     ToolTip, 確認流程完成, 900, 300
-
     Return
 
 ;==================判斷銷單狀態（列印中）==================
@@ -1267,12 +1248,10 @@ Print:
             Send,{Esc}
             break
         }
-    
         else {
-            Sleep % 100
+            Sleep, 100
         }
     }
-
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6CommandButton6, A
         if (OutputVar = 1) {
@@ -1281,7 +1260,7 @@ Print:
             break
         }
         else {
-            Sleep % 100
+            Sleep, 100
         }
     }
 
@@ -1300,10 +1279,9 @@ Print1:
             break
         }
         else {
-            Sleep % 100
+            Sleep, 100
         }
     }
-
     Loop {
         ControlGet, OutputVar, Visible,, ThunderRT6PictureBoxDC1, A
         
@@ -1312,10 +1290,9 @@ Print1:
             break
         }
         else {
-            Sleep % 100
+            Sleep, 100
         }
     }
-	
     ToolTip, 發票流程完成, 900, 300
     Return
 	
@@ -1351,6 +1328,8 @@ Label_UpdateHotkey:
 		hotkey_to_display := Hotkey_直接列印發票
 	else if (HotkeyName = "複製銷單")
 		hotkey_to_display := Hotkey_複製銷單
+	else if (HotkeyName = "未產生發票銷退")
+		hotkey_to_display := Hotkey_未產生發票銷退
 	else if (HotkeyName = "緊急停止")
 		hotkey_to_display := Hotkey_緊急停止
 	else if (HotkeyName = "快速輸入")
@@ -1384,6 +1363,7 @@ Label_SaveHotkey:
 	Hotkey, %Hotkey_帶入客訂單%, Off
 	Hotkey, %Hotkey_直接列印發票%, Off
 	Hotkey, %Hotkey_複製銷單%, Off
+	Hotkey, %Hotkey_未產生發票銷退%, Off
 	Hotkey, %Hotkey_緊急停止%, Off
 	Hotkey, %Hotkey_快速輸入%, Off
 	Hotkey, %Hotkey_快捷鍵說明%, Off
@@ -1399,6 +1379,8 @@ Label_SaveHotkey:
 		Hotkey_直接列印發票 := NewHotkey
 	else if (HotkeyName = "複製銷單")
 		Hotkey_複製銷單 := NewHotkey
+	else if (HotkeyName = "未產生發票銷退")
+		Hotkey_未產生發票銷退 := NewHotkey
 	else if (HotkeyName = "緊急停止")
 		Hotkey_緊急停止 := NewHotkey
 	else if (HotkeyName = "快速輸入")
@@ -1415,6 +1397,7 @@ Label_SaveHotkey:
     IniWrite, %Hotkey_帶入客訂單%, Hotkeys.ini, Hotkeys, 帶入客訂單
     IniWrite, %Hotkey_直接列印發票%, Hotkeys.ini, Hotkeys, 直接列印發票
     IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
+    IniWrite, %Hotkey_未產生發票銷退%, Hotkeys.ini, Hotkeys, 未產生發票銷退
     IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
     IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
     IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
@@ -1429,6 +1412,7 @@ Label_SaveHotkey:
     Hotkey, %Hotkey_帶入客訂單%, Label_帶入客訂單
     Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
     Hotkey, %Hotkey_複製銷單%, Label_複製銷單
+    Hotkey, %Hotkey_未產生發票銷退%, Label_未產生發票銷退
     Hotkey, %Hotkey_緊急停止%, Label_緊急停止
     Hotkey, %Hotkey_快速輸入%, Label_快速輸入
     Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
@@ -1510,3 +1494,163 @@ Label_GuiClose:
 	Gui, Destroy
 	is_running_flag := 0
 	Return
+	
+;==================未產生發票銷退模組==================
+Label_未產生發票銷退:
+	; 檢查開關，如果正在執行中，就立即停止。
+	if is_running_flag {
+		Return
+	}
+	; 打開開關，表示功能正在執行。
+	is_running_flag := 1
+
+	Gui, Destroy
+
+	__title := " 銷退-後4碼/完整8碼"
+	__text := ""
+	OutputVar := ""
+	InputBox, __textFormatTime, %__title%, %__text%,, 200, 100,,,,, %OutputVar%
+	if (ErrorLevel = 1) {
+		Gosub, stop
+	}
+	inputI := StrLen(__textFormatTime)
+	if (inputI = 4) {
+		FormatTime, OutputVar,,yyyyMMdd
+		inputO = %OutputVar%%__textFormatTime%
+	}
+	else if (inputI = 12) {
+		inputO = %__textFormatTime%
+	}
+	else {
+		Gosub, stop
+	}
+	
+	Gosub, run1
+	Gosub, gocancel
+	Gosub, out1
+		
+	WinWait, ahk_class ThunderRT6MDIForm, 銷貨退回單
+	Loop {
+		Sleep, 100
+		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨退回單
+		control = %OutputVar%
+		if (control != 銷貨退回單) {
+			Sleep, 100
+			ControlFocus, Edit35, ahk_class ThunderRT6MDIForm
+			Sleep, 100
+			ControlSetText , Edit35,, ahk_class ThunderRT6MDIForm
+			Sleep, 100
+			Control, EditPaste, %inputO%, Edit35, ahk_class ThunderRT6MDIForm
+			Sleep, 100
+			ControlSend, Edit35, {Enter}, ahk_class ThunderRT6MDIForm
+			break
+		}
+	}
+	
+	ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
+	Control, EditPaste, 未產生發票, Edit30, ahk_class ThunderRT6MDIForm
+	
+	Sleep, 100
+	Send,{F9}
+	
+	Loop {
+        ControlGet, OutputVar, Visible,, ThunderRT6PictureBoxDC1, A
+        if (OutputVar = 1) {
+            Send,{Esc}
+            break
+        }
+        else {
+            Sleep, 100
+        }
+    }
+	
+	Sleep, 100
+	Send, {F12}
+	Gosub, stoptip
+	Return
+	
+;==================打開銷退單模組==================
+gocancel:
+    ToolTip, 確認銷退單視窗中..., 900, 300
+    WinActivate ahk_class ThunderRT6MDIForm
+    WinWait, ahk_class ThunderRT6MDIForm
+    loop {
+        WinGetText, Str, A
+        
+        ; 檢查視窗文字的前五個字是不是「銷貨退回單」
+        if (SubStr(Str, 1, 5) = "銷貨退回單") {
+            break
+        }
+        else {
+            ToolTip, 重新開啟銷銷退單中....., 900, 300
+            
+            ; 檢查功能快捷視窗
+            WinGetText, Str, A
+            Haystack := Str
+            Needle := "功能快捷視窗"
+            Atr := InStr(Haystack, Needle)
+            
+            while not (Atr = 1) {
+                Sleep, 100
+                Send, {F12}
+                Sleep, 100
+                break
+            }
+            
+            ; 檢查銷貨退回單視窗
+            WinGetText, Str, A
+            Haystack := Str
+            Needle := "銷貨退回單"
+            Atr1 := InStr(Haystack, Needle)
+            while not (Atr1 = 1) {
+                Sleep, 100
+                Send, {F10}l12
+                break
+            }
+        }
+    }
+    
+    ToolTip, 開啟銷退單完成, 900, 300
+    Return
+	
+;==================檢查銷退貨單狀態功能==================
+out1:
+    Gosub, slip1
+    ToolTip, 判斷銷退單為新增狀態中..., 900, 300
+    
+    ; 進入主要判斷迴圈
+    loop {
+        ; 檢查「整張載入」這個按鈕是否可見
+        ControlGet, IsVisible, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm
+        
+        ; 如果按鈕已經可見 (IsVisible = 1)，就跳出迴圈
+        if (IsVisible) {
+            ToolTip, 銷退單新增完成, 900, 300
+            break
+        }
+        
+        ; 如果按鈕還不可見 (IsVisible = 0)，就模擬按下 F2 鍵
+        else {
+            ToolTip, 等待銷退單為新增狀態中...., 900, 300
+            Send, {F2}
+            Sleep, 100
+        }
+    }
+    
+    Return
+	
+;==================判斷銷退單狀態==================
+slip1:
+    ToolTip, 銷退單視窗確認中..., 900, 300
+    loop {
+        WinGet, ActiveWindowID, ID, A
+        WinGetText, VisibleText, ahk_id %ActiveWindowID%
+        if (SubStr(Str, 1, 5) = "銷貨退回單") {
+    		break
+		}
+		else {
+			ToolTip, 等待銷退單視窗開啟中...., 900, 300
+			Sleep, 100
+		}
+	}
+    Return
