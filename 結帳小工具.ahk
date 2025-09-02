@@ -105,7 +105,7 @@ Label_帶入客訂單:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 
-	Gui, Destroy
+	;Gui, Destroy
 
 	__title := "帶單-後4碼/完整8碼"
 	__text := ""
@@ -126,9 +126,9 @@ Label_帶入客訂單:
 		Gosub, stop
 	}
 
-	Gosub, run1
-	Gosub, gosales1
-	Gosub, main1
+	Gosub, run1 ;提示視窗功能（執行中）
+	Gosub, gosales1 ;打開銷貨單（打開其他視窗情況）
+	Gosub, main1 ;檢查銷貨單是否為新增狀態
 
 	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
 	Loop {
@@ -143,17 +143,10 @@ Label_帶入客訂單:
 			Sleep, 100
 			Control, EditPaste, %inputH%, Edit36, ahk_class ThunderRT6MDIForm
 			Sleep, 100
-			ControlSend, Edit36, {Enter}, ahk_class ThunderRT6MDIForm
+			Control, Check,, ThunderRT6CommandButton41, ahk_class ThunderRT6MDIForm, 銷貨單
 			break
 		}
 	}
-
-    WinWait, 速查功能視窗,, 1
-    if ErrorLevel = 1
-	{
-		ControlFocus, Edit36, ahk_class ThunderRT6MDIForm
-        ControlSend, Edit36, {Enter}, ahk_class ThunderRT6MDIForm
-    }
 
 	WinWait, ahk_class ThunderRT6FormDC, 區域選取
 	Loop {
@@ -163,6 +156,18 @@ Label_帶入客訂單:
 		if (control != TG70.ApexGridOleDB32.202) {
 			Sleep, 100
 			Send, {F9}
+			break
+		}
+	}
+	
+	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
+	Loop {
+		Sleep, 100
+		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨單
+		control = %OutputVar%
+		if (control != 銷貨單) {
+			Sleep, 100
+			ControlFocus, Edit38, ahk_class ThunderRT6MDIForm
 			break
 		}
 	}
@@ -663,6 +668,7 @@ Label_快速輸入:
 		)
 		FileEncoding, UTF-8
 		FileAppend, %DefaultText%, text_options.txt
+		FileSetAttrib, +H, text_options.txt
 		MsgBox, 0, 提醒, 偵測不到「text_options.txt」檔案。%A_Space%
 		(LTrim
 			現在將為您建立一個新的檔案！已自動填入範例文字，請直接儲存即可使用。
