@@ -148,8 +148,7 @@ Label_帶入客訂單:
 		}
 	}
 
-    WinWait, 速查功能視窗,, 2
-    ; 判斷是否在 5 秒內找到視窗
+    WinWait, 速查功能視窗,, 1
     if ErrorLevel = 1
 	{
 		ControlFocus, Edit36, ahk_class ThunderRT6MDIForm
@@ -724,8 +723,8 @@ Label_GoAdd:
 	Gui, 2:Default
 	Gui, Add, Text, , 請輸入或貼上要新增的文字：
 	Gui, Add, Edit, vNewText w250 h100
-	Gui, Add, Button, gLabel_AddText w60 h30, 確定
-	Gui, Add, Button, gLabel_CloseAdd w60 h30, 取消
+	Gui, Add, Button, x40 y120 w80 h30 gLabel_AddText, 確定
+	Gui, Add, Button, x150 y120 w80 h30 gLabel_CloseAdd, 取消
 	Gui, Show, , 新增文字
 	return
 
@@ -1146,9 +1145,9 @@ run1:
 stoptip:
     CoordMode, ToolTip
     ToolTip, 動作完成!!!!, 900, 300
+	is_running_flag := 0
     Sleep % 5000
     ToolTip
-	is_running_flag := 0
     Return
 
 ;==================判斷銷單狀態==================
