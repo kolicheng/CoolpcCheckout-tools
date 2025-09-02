@@ -723,8 +723,8 @@ Label_GoAdd:
 	Gui, 2:Default
 	Gui, Add, Text, , 請輸入或貼上要新增的文字：
 	Gui, Add, Edit, vNewText w250 h100
-	Gui, Add, Button, x40 y120 w80 h30 gLabel_AddText, 確定
-	Gui, Add, Button, x150 y120 w80 h30 gLabel_CloseAdd, 取消
+	Gui, Add, Button, x40 y140 w80 h30 gLabel_AddText, 確定
+	Gui, Add, Button, x150 y140 w80 h30 gLabel_CloseAdd, 取消
 	Gui, Show, , 新增文字
 	return
 
@@ -1310,7 +1310,7 @@ Label_修改熱鍵:
 
 	; 建立熱鍵修改視窗
 	Gui, Add, Text, , 請選擇要修改的熱鍵：
-	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵|全域設定
+	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|未產生發票銷退|緊急停止|快速輸入|快捷鍵說明|修改熱鍵|全域設定
 	Gui, Add, Text, x10 y60, 目前熱鍵：
 	Gui, Add, Edit, x100 y60 w120 vCurrentHotkey ReadOnly
 	Gui, Add, Text, x10 y90, 輸入新熱鍵：
