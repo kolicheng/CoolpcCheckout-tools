@@ -657,8 +657,6 @@ Label_快速輸入:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 
-	Gui, Destroy
-
 	; 檢查檔案是否存在
 	IfNotExist, text_options.txt
 	{
@@ -687,10 +685,7 @@ Label_快速輸入:
 	Return
 
 Label_GoTextGui:
-	; 如果視窗已經存在就關閉它，以便重新整理
-	IfWinExist, 文字快捷選單
-		Gui, Destroy
-
+	Gui, Destroy
 	; 建立GUI選單
 	Gui, Add, Text, , 請選擇要輸入的文字：
 
