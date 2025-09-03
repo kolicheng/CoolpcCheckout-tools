@@ -878,6 +878,7 @@ Finalcheck:
 		SetTimer, UpdateOSD, 200
 		Gosub, UpdateOSD
 		Gui, Show, x679 y9 w370 h100 NoActivate, 確認視窗
+		Gui -Caption
 		Return
 	}
 
