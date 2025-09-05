@@ -485,8 +485,6 @@ Label_複製銷單:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 
-	Gui, Destroy
-
 	__title := "拷貝-銷單後4碼或完整8碼"
 	__text := ""
 	OutputVar := ""
@@ -645,7 +643,6 @@ Label_複製銷單:
 	}
 
 	Gosub, stoptip
-
 	Return
 
 ;==================文字輸入快捷鍵模組功能==================
@@ -1522,8 +1519,6 @@ Label_未產生發票銷退:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 
-	Gui, Destroy
-
 	__title := " 銷退-後4碼/完整8碼"
 	__text := ""
 	OutputVar := ""
@@ -1547,10 +1542,10 @@ Label_未產生發票銷退:
 	Gosub, gocancel
 	Gosub, out1
 
-	WinWait, ahk_class ThunderRT6MDIForm, 銷貨退回單
+	WinWait, ahk_class ThunderRT6MDIForm
 	Loop {
 		Sleep, 100
-		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨退回單
+		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm
 		control = %OutputVar%
 		if (control != 銷貨退回單) {
 			Sleep, 100
@@ -1565,8 +1560,23 @@ Label_未產生發票銷退:
 		}
 	}
 
-	ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
-	Control, EditPaste, 未產生發票, Edit30, ahk_class ThunderRT6MDIForm
+	WinWait, ahk_class ThunderRT6MDIForm
+	WinActivate, ahk_class ThunderRT6MDIForm ; 確保視窗活躍
+
+	Loop {
+		Sleep, 100
+		ControlGetFocus, focused_control, ahk_class ThunderRT6MDIForm
+		control = %focused_control%
+		if (control != ThunderRT6CommandButton40) {
+			Sleep, 100
+			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
+			ControlSetText , Edit30,, ahk_class ThunderRT6MDIForm
+			Control, EditPaste, 未產生發票, Edit30, ahk_class ThunderRT6MDIForm
+
+			ToolTip, 載入完成, 900, 300
+			break
+		}
+	}
 
 	Sleep, 100
 	Send,{F9}
@@ -1673,10 +1683,6 @@ slip1:
 	}
     Return
 
-GuiClose:
-	Gui, Destroy
-	is_running_flag := 0
-	Return
 
 ;==================拋單==================
 Label_拋單:
@@ -1740,6 +1746,14 @@ Label_拋單:
 			break
 		}
 	}
+
+    loop {
+        ControlGet, IsVisible, Visible,, Edit6, ahk_class ThunderRT6FormDC
+        if (IsVisible) {
+            break
+        }
+            Sleep, 100
+    }
 
 	Loop {
 		Sleep, 100
@@ -1864,3 +1878,9 @@ copy:
     }
 
     Return
+
+;==================gui關閉功能==================
+GuiClose:
+	Gui, Destroy
+	is_running_flag := 0
+	Return
