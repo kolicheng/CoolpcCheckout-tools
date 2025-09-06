@@ -186,6 +186,8 @@ Label_結帳:
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
 
+	Gui, Destroy
+
 	if (OSD_enabled = 1) {
 		Gosub, Finalcheck
 	}
@@ -233,7 +235,7 @@ Label_結帳:
 			__title := "請輸入卡號後4碼"
 			__text := ""
 			InputBox, inputC,%__title%,%__text%,,200,100
-			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
+			ControlFocus, Edit27, ahk_class ThunderRT6MDIForm
 			ControlSend, Edit30, {Right}, ahk_class ThunderRT6MDIForm
 			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
 			if (ErrorLevel = 1) {
@@ -332,7 +334,8 @@ Label_結帳:
 			__title := "請輸入卡號後4碼"
 			__text := ""
 			InputBox, inputC,%__title%,%__text%,,200,100
-			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
+			ControlFocus, Edit27, ahk_class ThunderRT6MDIForm
+			ControlSend, Edit30, {Left}, ahk_class ThunderRT6MDIForm
 			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
 			if (ErrorLevel = 1) {
 				Gosub, stop
@@ -406,6 +409,8 @@ Label_直接列印發票:
 	}
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
+
+	Gui, Destroy
 
 	__title := "列印-輸入銷單後四碼"
 	__text := ""
@@ -484,6 +489,8 @@ Label_複製銷單:
 	}
 	; 打開開關，表示功能正在執行。
 	is_running_flag := 1
+
+	Gui, Destroy
 
 	__title := "拷貝-銷單後4碼或完整8碼"
 	__text := ""
@@ -702,6 +709,7 @@ Label_GoTextGui:
 	Gui, Add, Button, x220 y%y_pos% w60 h30 gGuiClose, 關閉
 	Gui, Show, , 文字快捷選單
 	is_running_flag := 0
+
 	Return
 
 Label_GoText:
@@ -829,7 +837,7 @@ Label_快捷鍵說明:
 Label_緊急停止:
 	; 這個熱鍵是緊急停止，不受開關限制，隨時都能執行。
 	; 立即關閉所有執行中的熱鍵功能並重新啟動程式。
-	MsgBox, 4624, 結帳小工具, 手動取消，重新載入小工具
+	MsgBox, 4624, 結帳小工具, 手動取消，請重新輸入
 	is_running_flag := 0
 	reload
 	Return
@@ -948,7 +956,6 @@ Markname:
     }
 
     EnvSet, mark
-
     Return
 
 ;==================打開銷貨單模組（打開其他視窗情況）==================
@@ -1664,7 +1671,6 @@ out1:
             Sleep, 100
         }
     }
-
     Return
 
 ;==================判斷銷退單狀態==================
@@ -1682,7 +1688,6 @@ slip1:
 		}
 	}
     Return
-
 
 ;==================拋單==================
 Label_拋單:
@@ -1881,6 +1886,7 @@ copy:
 
 ;==================gui關閉功能==================
 GuiClose:
+ButtonCancel:
 	Gui, Destroy
 	is_running_flag := 0
 	Return
