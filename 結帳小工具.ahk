@@ -229,18 +229,23 @@ Label_結帳:
 		else {
 			Gosub, stop
 		}
-		MsgBox, 260, 結帳小工具, 刷卡嗎？
+
+		MsgBox, 256 + 3, 結帳小工具, 刷卡嗎？
 		IfMsgBox Yes
 		{
 			__title := "請輸入卡號後4碼"
 			__text := ""
 			InputBox, inputC,%__title%,%__text%,,200,100
 			ControlFocus, Edit27, ahk_class ThunderRT6MDIForm
+			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
 			ControlSend, Edit30, {Right}, ahk_class ThunderRT6MDIForm
-			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
+			Control, EditPaste, %A_Space%刷卡/%inputC%, Edit30, ahk_class ThunderRT6MDIForm
 			if (ErrorLevel = 1) {
 				Gosub, stop
 			}
+		}
+		else if Cancel {
+			Gosub, stop
 		}
 		else {
 			inputC := ""
@@ -335,8 +340,9 @@ Label_結帳:
 			__text := ""
 			InputBox, inputC,%__title%,%__text%,,200,100
 			ControlFocus, Edit27, ahk_class ThunderRT6MDIForm
-			ControlSend, Edit30, {Left}, ahk_class ThunderRT6MDIForm
-			Control, EditPaste, 刷卡/%inputC%%A_Space%, Edit30, ahk_class ThunderRT6MDIForm
+			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
+			ControlSend, Edit30, {Right}, ahk_class ThunderRT6MDIForm
+			Control, EditPaste, %A_Space%刷卡/%inputC%, Edit30, ahk_class ThunderRT6MDIForm
 			if (ErrorLevel = 1) {
 				Gosub, stop
 			}
@@ -1611,8 +1617,6 @@ gocancel:
     WinWait, ahk_class ThunderRT6MDIForm
     loop {
         WinGetText, Str, A
-
-        ; 檢查視窗文字的前五個字是不是「銷貨退回單」
         if (SubStr(Str, 1, 5) = "銷貨退回單") {
             break
         }
@@ -1652,25 +1656,20 @@ gocancel:
 out1:
     Gosub, slip1
     ToolTip, 判斷銷退單為新增狀態中..., 900, 300
-
-    ; 進入主要判斷迴圈
     loop {
-        ; 檢查「整張載入」這個按鈕是否可見
-        ControlGet, IsVisible, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm
-
-        ; 如果按鈕已經可見 (IsVisible = 1)，就跳出迴圈
-        if (IsVisible) {
-            ToolTip, 銷退單新增完成, 900, 300
+        ToolTip, 等待銷退單為新增狀態中...., 900, 300
+        ControlGet, OutputVar, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm
+        if (OutputVar = 0) {
+            Sleep, 100
+            Send,{F2}
             break
         }
-
-        ; 如果按鈕還不可見 (IsVisible = 0)，就模擬按下 F2 鍵
         else {
-            ToolTip, 等待銷退單為新增狀態中...., 900, 300
-            Send, {F2}
-            Sleep, 100
+			ToolTip, 銷退單新增完成, 900, 300
+			break
         }
     }
+
     Return
 
 ;==================判斷銷退單狀態==================
@@ -1722,7 +1721,9 @@ Label_拋單:
 	Gosub, run1
 
 	WinWait, ahk_class ThunderRT6MDIForm, 倉庫調撥單
+
 	Gosub, gostock
+	Gosub, stock1
 
 	Loop {
 		Sleep, 100
@@ -1817,31 +1818,19 @@ gostock:
     WinActivate ahk_class ThunderRT6MDIForm
     WinWait, ahk_class ThunderRT6MDIForm
     loop {
-        WinGetText,Str,A
-        Haystack := Str
-        Needle := "倉庫調撥單"
-        Atr := InStr(Haystack, Needle)
-        if (Atr = 1) {
-            ToolTip, 等待退出狀態中...., 900, 300
-            Loop {
-                ControlGetText, OutputVar, Edit55, ahk_class ThunderRT6MDIForm
-                if (OutputVar != "") {
-                    break
-                }
-                else {
-					Sleep, 100
-					Send,{F2}
-                    break
-                }
-            }
-            break
-        }
+        WinGetText, Str, A
+        if (SubStr(Str, 1, 5) = "倉庫調撥單") {
+			break
+		}
         else {
-            ToolTip, 重新開啟調撥單畫面中....., 900, 300
-            WinGetText,Str,A
+            ToolTip, 重新開啟倉庫調撥單中....., 900, 300
+
+            ; 檢查功能快捷視窗
+            WinGetText, Str, A
             Haystack := Str
             Needle := "功能快捷視窗"
             Atr := InStr(Haystack, Needle)
+
             while not (Atr = 1) {
                 Sleep, 100
                 Send, {F12}
@@ -1849,7 +1838,7 @@ gostock:
                 break
             }
 
-            WinGetText,Str,A
+            WinGetText, Str, A
             Haystack := Str
             Needle := "倉庫調撥單"
             Atr1 := InStr(Haystack, Needle)
@@ -1858,16 +1847,34 @@ gostock:
                 Send, {F10}l1E
                 break
             }
-            continue
         }
     }
 
-    ToolTip, 開啟調撥單完成, 900, 300
+    ToolTip, 開啟倉庫調撥單完成, 900, 300
     Return
+
+;==================檢查調撥單狀態功能==================
+stock1:
+    ToolTip, 判斷調撥單為新增狀態中..., 900, 300
+    loop {
+        ToolTip, 等待調撥單為新增狀態中...., 900, 300
+        ControlGet, OutputVar, Visible,, ThunderRT6CommandButton52, ahk_class ThunderRT6MDIForm
+        if (OutputVar = 0) {
+            Sleep, 100
+            Send,{F2}
+            break
+        }
+        else {
+			ToolTip, 測試狀態中..., 900, 300
+			break
+        }
+    }
+
+    ToolTip, 調撥單新增完成, 900, 300
+	Return
 
 ;==================拷貝功能==================
 copy:
-    ;Gosub, slip
     ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
     ToolTip, 單據複製功能視窗載入中..., 900, 300
 
