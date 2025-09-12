@@ -1591,22 +1591,22 @@ Label_未產生發票銷退:
 		}
 	}
 
-	Sleep, 100
-	Send,{F9}
+	;Sleep, 100
+	;Send,{F9}
 
-	Loop {
-        ControlGet, OutputVar, Visible,, ThunderRT6PictureBoxDC1, A
-        if (OutputVar = 1) {
-            Send,{Esc}
-            break
-        }
-        else {
-            Sleep, 100
-        }
-    }
+	;Loop {
+    ;    ControlGet, OutputVar, Visible,, ThunderRT6PictureBoxDC1, A
+    ;    if (OutputVar = 1) {
+    ;        Send,{Esc}
+    ;        break
+    ;    }
+    ;    else {
+    ;        Sleep, 100
+    ;    }
+    ;}
 
-	Sleep, 100
-	Send, {F12}
+	;Sleep, 100
+	;Send, {F12}
 	Gosub, stoptip
 	Return
 
@@ -1732,20 +1732,28 @@ Label_拋單:
 		}
 	}
 
-	WinWait, ahk_class ThunderRT6FormDC
+	;WinWait, ahk_class ThunderRT6FormDC
 
 	Loop {
 		Sleep, 100
-		PixelGetColor, color, 377, 491 , Alt
-		control = %color%
-		if (control = 0xFFFFFF) {
-			Sleep, 100
-			CoordMode, Mouse , Screen
-			__ClickX:=331
-			__ClickY:=485
-			__ClickTimes:=1
-			Click %__ClickX%, %__ClickY%, %__ClickTimes%
-			Sleep, 100
+		WinGetText, OutputVar , ahk_class ThunderRT6FormDC
+		control = %OutputVar%
+		if (control != 產生單據日期) {
+			Loop {
+				Sleep, 100
+				PixelGetColor, color, 245, 379
+				control = %color%
+				if (control = 0xFFFFFF) {
+					Sleep, 100
+					CoordMode, Mouse , Screen
+					__ClickX:=331
+					__ClickY:=485
+					__ClickTimes:=1
+					Click %__ClickX%, %__ClickY%, %__ClickTimes%
+					Sleep, 100
+					break
+				}
+			}
 			break
 		}
 	}
