@@ -1719,9 +1719,6 @@ Label_拋單:
 	}
 
 	Gosub, run1
-
-	WinWait, ahk_class ThunderRT6MDIForm, 倉庫調撥單
-
 	Gosub, gostock
 	Gosub, stock1
 
