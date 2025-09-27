@@ -1420,33 +1420,21 @@ Label_未產生發票銷退:
 	Gosub, out1
 	
 	loop {
-		ControlGet, IsVisible, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm
+		ControlGet, IsVisible, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm, 銷貨退回單
 		if (IsVisible) {
+			Sleep, 1000
+			ControlFocus, Edit35, ahk_class ThunderRT6MDIForm, 銷貨退回單
+			ControlSetText , Edit35,, ahk_class ThunderRT6MDIForm, 銷貨退回單
+			Control, EditPaste, %inputO%, Edit35, ahk_class ThunderRT6MDIForm, 銷貨退回單
+			Sleep, 100
+			Send, {Enter}
+			ControlSend, Edit35, {Enter}, ahk_class ThunderRT6MDIForm
+			Sleep, 500
 			ToolTip, 新增銷退單完成, 900, 300
-			Sleep, 100
-			ControlFocus, Edit35, ahk_class ThunderRT6MDIForm
-			Sleep, 100
-			ControlSetText , Edit35,, ahk_class ThunderRT6MDIForm
-			Sleep, 100
-			Control, EditPaste, %inputO%, Edit35, ahk_class ThunderRT6MDIForm
-			Sleep, 100
-			;ControlSend, Edit35, {Enter}, ahk_class ThunderRT6MDIForm
-			Sleep, 100
-			Control, Check,, ThunderRT6CommandButton147, ahk_class ThunderRT6MDIForm
 			break
 		}
-		Sleep, 100
-	}
-	
-	WinWait, ahk_class ThunderRT6FormDC
-	Loop {
-		Sleep, 100
-		ControlGetFocus, focused_control, ahk_class ThunderRT6FormDC
-		control = %focused_control%
-		if (control == ThunderRT6CommandButton37) {
+		else {
 			Sleep, 100
-			Send, {Esc}
-			break
 		}
 	}
 	
