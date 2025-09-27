@@ -761,20 +761,20 @@ Label_快捷鍵說明:
 	Gui, Add, Text, x130 y110 w110 h24, %Hotkey_複製銷單_顯示%
 	Gui, Add, Text, x20 y140 w100 h24, 未產生發票銷退
 	Gui, Add, Text, x130 y140 w110 h24, %Hotkey_未產生發票銷退_顯示%
-	Gui, Add, Text, x20 y140 w100 h24, 拋單
-	Gui, Add, Text, x130 y140 w110 h24, %Hotkey_拋單_顯示%
-	Gui, Add, Text, x20 y170 w100 h24, 緊急停止
-	Gui, Add, Text, x130 y170 w110 h24, %Hotkey_緊急停止_顯示%
-	Gui, Add, Text, x20 y200 w100 h24, 快速輸入
-	Gui, Add, Text, x130 y200 w110 h24, %Hotkey_快速輸入_顯示%
-	Gui, Add, Text, x20 y230 w100 h24, 快捷鍵說明
-	Gui, Add, Text, x130 y230 w110 h24, %Hotkey_快捷鍵說明_顯示%
-	Gui, Add, Text, x20 y260 w100 h24, 修改熱鍵
-	Gui, Add, Text, x130 y260 w110 h24, %Hotkey_修改熱鍵_顯示%
-	Gui, Add, Text, x20 y290 w100 h24, 全域設定
-	Gui, Add, Text, x130 y290 w110 h24, %Hotkey_全域設定_顯示%
-	Gui, Add, Button, x20 y330 w220 h32 gGuiClose, 關閉
-	Gui, Show, w270 h380, 結帳小工具
+	Gui, Add, Text, x20 y170 w100 h24, 拋單
+	Gui, Add, Text, x130 y170 w110 h24, %Hotkey_拋單_顯示%
+	Gui, Add, Text, x20 y200 w100 h24, 緊急停止
+	Gui, Add, Text, x130 y200 w110 h24, %Hotkey_緊急停止_顯示%
+	Gui, Add, Text, x20 y230 w100 h24, 快速輸入
+	Gui, Add, Text, x130 y230 w110 h24, %Hotkey_快速輸入_顯示%
+	Gui, Add, Text, x20 y260 w100 h24, 快捷鍵說明
+	Gui, Add, Text, x130 y260 w110 h24, %Hotkey_快捷鍵說明_顯示%
+	Gui, Add, Text, x20 y290 w100 h24, 修改熱鍵
+	Gui, Add, Text, x130 y290 w110 h24, %Hotkey_修改熱鍵_顯示%
+	Gui, Add, Text, x20 y320 w100 h24, 全域設定
+	Gui, Add, Text, x130 y320 w110 h24, %Hotkey_全域設定_顯示%
+	Gui, Add, Button, x20 y360 w220 h32 gGuiClose, 關閉
+	Gui, Show, w270 h420, 結帳小工具
 	Return
 	
 ;==================緊急停止功能模組==================
@@ -1419,30 +1419,31 @@ Label_未產生發票銷退:
 	Gosub, gocancel
 	Gosub, out1
 	
-	WinWait, ahk_class ThunderRT6MDIForm
-	Loop {
-		Sleep, 100
-		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm
-		control = %OutputVar%
-		if (control != 銷貨退回單) {
+	loop {
+		ControlGet, IsVisible, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm, 銷貨退回單
+		if (IsVisible) {
+			Sleep, 1000
+			ControlFocus, Edit35, ahk_class ThunderRT6MDIForm, 銷貨退回單
+			ControlSetText , Edit35,, ahk_class ThunderRT6MDIForm, 銷貨退回單
+			Control, EditPaste, %inputO%, Edit35, ahk_class ThunderRT6MDIForm, 銷貨退回單
 			Sleep, 100
-			ControlFocus, Edit35, ahk_class ThunderRT6MDIForm
-			Sleep, 100
-			ControlSetText , Edit35,, ahk_class ThunderRT6MDIForm
-			Sleep, 100
-			Control, EditPaste, %inputO%, Edit35, ahk_class ThunderRT6MDIForm
-			Sleep, 100
+			Send, {Enter}
 			ControlSend, Edit35, {Enter}, ahk_class ThunderRT6MDIForm
+			Sleep, 500
+			ToolTip, 新增銷退單完成, 900, 300
 			break
 		}
+		else {
+			Sleep, 100
+		}
 	}
-	WinWait, ahk_class ThunderRT6MDIForm
-	WinActivate, ahk_class ThunderRT6MDIForm
+	
+	WinWait, ahk_class ThunderRT6MDIForm, 銷貨退回單
 	Loop {
 		Sleep, 100
-		ControlGetFocus, focused_control, ahk_class ThunderRT6MDIForm
-		control = %focused_control%
-		if (control != ThunderRT6CommandButton40) {
+		WinGetText, OutputVar , ahk_class ThunderRT6MDIForm, 銷貨退回單
+		control = %OutputVar%
+		if (control != 銷貨退回單) {
 			Sleep, 100
 			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
 			ControlSetText , Edit30,, ahk_class ThunderRT6MDIForm
@@ -1451,6 +1452,7 @@ Label_未產生發票銷退:
 			break
 		}
 	}
+
 	Gosub, stoptip
 	Return
 	
@@ -1495,15 +1497,15 @@ out1:
 	Gosub, slip1
 	ToolTip, 判斷銷退單為新增狀態中..., 900, 300
 	loop {
-			ToolTip, 等待銷退單為新增狀態中...., 900, 300
-			ControlGet, OutputVar, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm
+		ToolTip, 等待銷退單為新增狀態中...., 900, 300
+		ControlGet, OutputVar, Visible,, ThunderRT6CommandButton40, ahk_class ThunderRT6MDIForm
 		if (OutputVar = 0) {
 			Sleep, 100
 			Send,{F2}
 			break
 		}
 		else {
-			ToolTip, 銷退單新增完成, 900, 300
+			ToolTip, 正在新增銷退單, 900, 300
 			break
 		}
 	}
@@ -1567,13 +1569,15 @@ Label_拋單:
 		}
 	}
 	
+	WinWait, ahk_class ThunderRT6FormDC
+	
 	Loop {
 		Sleep, 100
 		WinGetText, OutputVar , ahk_class ThunderRT6FormDC
 		control = %OutputVar%
 		if (control != 產生單據日期) {
 			Loop {
-				Sleep, 100
+				Sleep, 1000
 				PixelGetColor, color, 245, 379
 				control = %color%
 				if (control = 0xFFFFFF) {
@@ -1592,9 +1596,9 @@ Label_拋單:
 	}
 	
 	loop {
-		ControlGet, IsVisible, Visible,, Edit6, ahk_class ThunderRT6FormDC
+		ControlGet, IsVisible, Visible,, AfxOleControl4211, ahk_class ThunderRT6FormDC
 		if (IsVisible) {
-		break
+			break
 		}
 		Sleep, 100
 	}
@@ -1604,7 +1608,7 @@ Label_拋單:
 		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 產生單據日期
 		control = %OutputVar%
 		if (control != 產生單據日期) {
-			Sleep, 100
+			Sleep, 1000
 			SetControlDelay -1
 			ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
 			Sleep, 100
