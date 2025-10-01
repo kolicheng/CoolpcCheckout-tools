@@ -6,6 +6,7 @@ Hotkey_直接列印發票 = ^+C
 Hotkey_複製銷單 = ScrollLock
 Hotkey_未產生發票銷退 = ^D
 Hotkey_拋單 = ^B
+Hotkey_拋補單 = !B
 Hotkey_緊急停止 = F8
 Hotkey_快速輸入 = ^E
 Hotkey_快捷鍵說明 = ^+H
@@ -24,7 +25,7 @@ if FileExist("Hotkeys.ini") {
 	IniRead, Hotkey_複製銷單, Hotkeys.ini, Hotkeys, 複製銷單
 	IniRead, Hotkey_未產生發票銷退, Hotkeys.ini, Hotkeys, 未產生發票銷退
 	IniRead, Hotkey_拋單, Hotkeys.ini, Hotkeys, 拋單
-	IniRead, Hotkey_拋補件, Hotkeys.ini, Hotkeys, 拋補件
+	IniRead, Hotkey_拋補單, Hotkeys.ini, Hotkeys, 拋補單
 	IniRead, Hotkey_緊急停止, Hotkeys.ini, Hotkeys, 緊急停止
 	IniRead, Hotkey_快速輸入, Hotkeys.ini, Hotkeys, 快速輸入
 	IniRead, Hotkey_快捷鍵說明, Hotkeys.ini, Hotkeys, 快捷鍵說明
@@ -56,7 +57,7 @@ if FileExist("Hotkeys.ini") {
 	IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
 	IniWrite, %Hotkey_未產生發票銷退%, Hotkeys.ini, Hotkeys, 未產生發票銷退
 	IniWrite, %Hotkey_拋單%, Hotkeys.ini, Hotkeys, 拋單
-	IniWrite, %Hotkey_拋補件%, Hotkeys.ini, Hotkeys, 拋補件
+	IniWrite, %Hotkey_拋補單%, Hotkeys.ini, Hotkeys, 拋補單
 	IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
 	IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
 	IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
@@ -75,7 +76,7 @@ Hotkey, %Hotkey_直接列印發票%, Label_直接列印發票
 Hotkey, %Hotkey_複製銷單%, Label_複製銷單
 Hotkey, %Hotkey_未產生發票銷退%, Label_未產生發票銷退
 Hotkey, %Hotkey_拋單%, Label_拋單
-Hotkey, %Hotkey_拋補件%, Label_拋補件
+Hotkey, %Hotkey_拋補單%, Label_拋補單
 Hotkey, %Hotkey_緊急停止%, Label_緊急停止
 Hotkey, %Hotkey_快速輸入%, Label_快速輸入
 Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
@@ -767,20 +768,20 @@ Label_快捷鍵說明:
 	Gui, Add, Text, x130 y140 w110 h24, %Hotkey_未產生發票銷退_顯示%
 	Gui, Add, Text, x20 y170 w100 h24, 拋單
 	Gui, Add, Text, x130 y170 w110 h24, %Hotkey_拋單_顯示%
-	Gui, Add, Text, x20 y170 w100 h24, 拋補單
-	Gui, Add, Text, x130 y170 w110 h24, %Hotkey_拋補單_顯示%
-	Gui, Add, Text, x20 y200 w100 h24, 緊急停止
-	Gui, Add, Text, x130 y200 w110 h24, %Hotkey_緊急停止_顯示%
-	Gui, Add, Text, x20 y230 w100 h24, 快速輸入
-	Gui, Add, Text, x130 y230 w110 h24, %Hotkey_快速輸入_顯示%
-	Gui, Add, Text, x20 y260 w100 h24, 快捷鍵說明
-	Gui, Add, Text, x130 y260 w110 h24, %Hotkey_快捷鍵說明_顯示%
-	Gui, Add, Text, x20 y290 w100 h24, 修改熱鍵
-	Gui, Add, Text, x130 y290 w110 h24, %Hotkey_修改熱鍵_顯示%
-	Gui, Add, Text, x20 y320 w100 h24, 全域設定
-	Gui, Add, Text, x130 y320 w110 h24, %Hotkey_全域設定_顯示%
-	Gui, Add, Button, x20 y360 w220 h32 gGuiClose, 關閉
-	Gui, Show, w270 h450, 結帳小工具
+	Gui, Add, Text, x20 y200 w100 h24, 拋補單
+	Gui, Add, Text, x130 y200 w110 h24, %Hotkey_拋補單_顯示%
+	Gui, Add, Text, x20 y230 w100 h24, 緊急停止
+	Gui, Add, Text, x130 y230 w110 h24, %Hotkey_緊急停止_顯示%
+	Gui, Add, Text, x20 y260 w100 h24, 快速輸入
+	Gui, Add, Text, x130 y260 w110 h24, %Hotkey_快速輸入_顯示%
+	Gui, Add, Text, x20 y290 w100 h24, 快捷鍵說明
+	Gui, Add, Text, x130 y290 w110 h24, %Hotkey_快捷鍵說明_顯示%
+	Gui, Add, Text, x20 y320 w100 h24, 修改熱鍵
+	Gui, Add, Text, x130 y320 w110 h24, %Hotkey_修改熱鍵_顯示%
+	Gui, Add, Text, x20 y350 w100 h24, 全域設定
+	Gui, Add, Text, x130 y350 w110 h24, %Hotkey_全域設定_顯示%
+	Gui, Add, Button, x20 y380 w220 h32 gGuiClose, 關閉
+	Gui, Show, w270 h430, 結帳小工具
 	Return
 	
 ;==================緊急停止功能模組==================
@@ -912,6 +913,18 @@ gosales1:
 			break
 		}
 		else {
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar := "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					Sleep, 100
+				}
+			}
 			ToolTip, 重新開啟銷單畫面中....., 900, 300
 			WinGetText,Str,A
 			Haystack := Str
@@ -966,6 +979,18 @@ gosales:
 			break
 		}
 		else {
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar := "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					Sleep, 100
+				}
+			}
 			ToolTip, 重新開啟銷單畫面中....., 900, 300
 			WinGetText,Str,A
 			Haystack := Str
@@ -1235,7 +1260,7 @@ Print1:
 Label_修改熱鍵:
 	Gui, Destroy
 	Gui, Add, Text, , 請選擇要修改的熱鍵：
-	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|未產生發票銷退|拋單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵|全域設定
+	Gui, Add, DropDownList, vHotkeyName gLabel_UpdateHotkey, 結帳|帶入客訂單|直接列印發票|複製銷單|未產生發票銷退|拋單|拋補單|緊急停止|快速輸入|快捷鍵說明|修改熱鍵|全域設定
 	Gui, Add, Text, x10 y60, 目前熱鍵：
 	Gui, Add, Edit, x100 y60 w120 vCurrentHotkey ReadOnly
 	Gui, Add, Text, x10 y90, 輸入新熱鍵：
@@ -1261,6 +1286,8 @@ Label_UpdateHotkey:
 	hotkey_to_display := Hotkey_未產生發票銷退
 	else if (HotkeyName = "拋單")
 	hotkey_to_display := Hotkey_拋單
+	else if (HotkeyName = "拋補單")
+	hotkey_to_display := Hotkey_拋補單
 	else if (HotkeyName = "緊急停止")
 	hotkey_to_display := Hotkey_緊急停止
 	else if (HotkeyName = "快速輸入")
@@ -1288,6 +1315,7 @@ Label_SaveHotkey:
 	Hotkey, %Hotkey_複製銷單%, Off
 	Hotkey, %Hotkey_未產生發票銷退%, Off
 	Hotkey, %Hotkey_拋單%, Off
+	Hotkey, %Hotkey_拋補單%, Off
 	Hotkey, %Hotkey_緊急停止%, Off
 	Hotkey, %Hotkey_快速輸入%, Off
 	Hotkey, %Hotkey_快捷鍵說明%, Off
@@ -1304,6 +1332,8 @@ Label_SaveHotkey:
 	else if (HotkeyName = "未產生發票銷退")
 		Hotkey_未產生發票銷退 := NewHotkey
 	else if (HotkeyName = "拋單")
+		Hotkey_拋單 := NewHotkey
+	else if (HotkeyName = "拋補單")
 		Hotkey_拋單 := NewHotkey
 	else if (HotkeyName = "緊急停止")
 		Hotkey_緊急停止 := NewHotkey
@@ -1322,6 +1352,7 @@ Label_SaveHotkey:
 	IniWrite, %Hotkey_複製銷單%, Hotkeys.ini, Hotkeys, 複製銷單
 	IniWrite, %Hotkey_未產生發票銷退%, Hotkeys.ini, Hotkeys, 未產生發票銷退
 	IniWrite, %Hotkey_拋單%, Hotkeys.ini, Hotkeys, 拋單
+	IniWrite, %Hotkey_拋補單%, Hotkeys.ini, Hotkeys, 拋補單
 	IniWrite, %Hotkey_緊急停止%, Hotkeys.ini, Hotkeys, 緊急停止
 	IniWrite, %Hotkey_快速輸入%, Hotkeys.ini, Hotkeys, 快速輸入
 	IniWrite, %Hotkey_快捷鍵說明%, Hotkeys.ini, Hotkeys, 快捷鍵說明
@@ -1334,6 +1365,7 @@ Label_SaveHotkey:
 	Hotkey, %Hotkey_複製銷單%, Label_複製銷單
 	Hotkey, %Hotkey_未產生發票銷退%, Label_未產生發票銷退
 	Hotkey, %Hotkey_拋單%, Label_拋單
+	Hotkey, %Hotkey_拋補單%, Label_拋補單
 	Hotkey, %Hotkey_緊急停止%, Label_緊急停止
 	Hotkey, %Hotkey_快速輸入%, Label_快速輸入
 	Hotkey, %Hotkey_快捷鍵說明%, Label_快捷鍵說明
@@ -1473,6 +1505,18 @@ gocancel:
 			break
 		}
 		else {
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar := "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					Sleep, 100
+				}
+			}
 			ToolTip, 重新開啟銷銷退單中....., 900, 300
 			WinGetText, Str, A
 			Haystack := Str
@@ -1669,6 +1713,18 @@ gostock:
 			break
 		}
 		else {
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar := "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					Sleep, 100
+				}
+			}
 			ToolTip, 重新開啟倉庫調撥單中....., 900, 300
 			WinGetText, Str, A
 			Haystack := Str
@@ -1730,8 +1786,8 @@ copy:
 	Return
 
 
-;==================補缺件==================
-Label_拋補件:
+;==================拋補單==================
+Label_拋補單:
 	if is_running_flag {
 		Return
 	}
@@ -1739,7 +1795,7 @@ Label_拋補件:
 	
 	Gui, Destroy
 	
-	__title := "補缺件-調撥單後4碼或完整8碼"
+	__title := "拋補單-調撥單後4碼或完整8碼"
 	__text := ""
 	OutputVar := ""
 	InputBox, __textFormatTime, %__title%, %__text%,, 200, 100,,,,, %OutputVar%
@@ -1832,3 +1888,4 @@ ButtonCancel:
 	Gui, Destroy
 	is_running_flag := 0
 	Return
+	
