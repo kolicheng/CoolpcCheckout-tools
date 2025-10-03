@@ -494,28 +494,28 @@ Label_複製銷單:
 	WinWait, ahk_class ThunderRT6MDIForm, 銷貨單
 	
 	Gosub, gosales
-	Gosub, find
+	;Gosub, find
 	
-	WinWait, ahk_class ThunderRT6FormDC, 軟體類別
-	Loop {
-		Sleep, 100
-		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 軟體類別
-		control = %OutputVar%
-		if (control != 軟體類別) {
-			Sleep, 100
-			ControlSetText , Edit22, %    /  /  , ahk_class ThunderRT6FormDC
-			Sleep, 100
-			Control, EditPaste, %inputR%, Edit24, ahk_class ThunderRT6FormDC
-			Sleep, 100
-			Control, EditPaste, %inputR%, Edit25, ahk_class ThunderRT6FormDC
-			Sleep, 100
-			Send, {F9}
-			break
-		}
-		else {
-			Sleep, 100
-		}
-	}
+	;WinWait, ahk_class ThunderRT6FormDC, 軟體類別
+	;Loop {
+	;	Sleep, 100
+	;	WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 軟體類別
+	;	control = %OutputVar%
+	;	if (control != 軟體類別) {
+	;		Sleep, 100
+	;		ControlSetText , Edit22, %    /  /  , ahk_class ThunderRT6FormDC
+	;		Sleep, 100
+	;		Control, EditPaste, %inputR%, Edit24, ahk_class ThunderRT6FormDC
+	;		Sleep, 100
+	;		Control, EditPaste, %inputR%, Edit25, ahk_class ThunderRT6FormDC
+	;		Sleep, 100
+	;		Send, {F9}
+	;		break
+	;	}
+	;	else {
+	;		Sleep, 100
+	;	}
+	;}
 	
 	ControlFocus, Edit23, ahk_class ThunderRT6MDIForm
 	
@@ -906,6 +906,18 @@ gosales1:
 			break
 		}
 		else {
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar == "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					break
+				}
+			}
 			ToolTip, 重新開啟銷單畫面中....., 900, 300
 			WinGetText,Str,A
 			Haystack := Str
@@ -960,6 +972,18 @@ gosales:
 			break
 		}
 		else {
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar == "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					break
+				}
+			}
 			ToolTip, 重新開啟銷單畫面中....., 900, 300
 			WinGetText,Str,A
 			Haystack := Str
@@ -1467,7 +1491,19 @@ gocancel:
 			break
 		}
 		else {
-			ToolTip, 重新開啟銷銷退單中....., 900, 300
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar == "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					break
+				}
+			}
+			ToolTip, 重新開啟銷退單中....., 900, 300
 			WinGetText, Str, A
 			Haystack := Str
 			Needle := "功能快捷視窗"
@@ -1661,6 +1697,18 @@ gostock:
 			break
 		}
 		else {
+			loop {
+				ControlGetFocus, OutputVar , ahk_class ThunderRT6FormDC
+				if (OutputVar == "ThunderRT6PictureBoxDC1") {
+					Sleep, 100
+					Send, {Esc}
+					Sleep, 100
+					break
+				}
+				else {
+					break
+				}
+			}
 			ToolTip, 重新開啟倉庫調撥單中....., 900, 300
 			WinGetText, Str, A
 			Haystack := Str
