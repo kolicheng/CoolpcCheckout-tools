@@ -663,7 +663,12 @@ Label_GoText:
 	Gui, Hide
 	WinActivate, ahk_id %LastActiveWinID%
 	Sleep, 100
-	Send, {Home}%ButtonText%
+	Clipboard := ButtonText    ; 把變數內容放到剪貼簿
+	ClipWait, 1                ; 等待剪貼簿成功更新
+	Send, {Home}               ; (可保留) 移到開頭
+	Sleep, 50
+	Send, ^v                   ; 模擬按下 Ctrl+V 貼上
+	Sleep, 50
 	return
 	
 Label_GoEdit:
@@ -908,25 +913,38 @@ gosales1:
 					break
 				}
 			}
-			ToolTip, 重新開啟銷單畫面中....., 900, 300
-			WinGetText,Str,A
-			Haystack := Str
-			Needle := "功能快捷視窗"
-			Atr := InStr(Haystack, Needle)
-			while not (Atr = 1) {
-				Sleep, 100
-				Send, {F12}
-				Sleep, 100
-				break
-			}
-			WinGetText,Str,A
-			Haystack := Str
-			Needle := "銷貨單"
-			Atr1 := InStr(Haystack, Needle)
-			while not (Atr1 = 1) {
-				Sleep, 100
-				Send, {F10}l11
-				break
+			WinActivate ahk_class ThunderRT6MDIForm
+			WinWait, ahk_class ThunderRT6MDIForm
+			loop {
+				WinGetText,Str,A
+				Haystack := Str
+				Needle := "銷貨單"
+				Atr := InStr(Haystack, Needle)
+				if (Atr = 1) {
+					break
+				}
+				else {
+					ToolTip, 重新開啟銷單畫面中....., 900, 300
+					WinGetText,Str,A
+					Haystack := Str
+					Needle := "功能快捷視窗"
+					Atr := InStr(Haystack, Needle)
+					while not (Atr = 1) {
+						Sleep, 100
+						Send, {F12}
+						Sleep, 100
+						break
+					}
+					WinGetText,Str,A
+					Haystack := Str
+					Needle := "銷貨單"
+					Atr1 := InStr(Haystack, Needle)
+					while not (Atr1 = 1) {
+						Sleep, 100
+						Send, {F10}l11
+						break
+					}
+				}
 			}
 		}
 	}
@@ -974,25 +992,38 @@ gosales:
 					break
 				}
 			}
-			ToolTip, 重新開啟銷單畫面中....., 900, 300
-			WinGetText,Str,A
-			Haystack := Str
-			Needle := "功能快捷視窗"
-			Atr := InStr(Haystack, Needle)
-			while not (Atr = 1) {
-				Sleep, 100
-				Send, {F12}
-				Sleep, 100
-				break
-			}
-			WinGetText,Str,A
-			Haystack := Str
-			Needle := "銷貨單"
-			Atr1 := InStr(Haystack, Needle)
-			while not (Atr1 = 1) {
-				Sleep, 100
-				Send, {F10}l11
-				break
+			WinActivate ahk_class ThunderRT6MDIForm
+			WinWait, ahk_class ThunderRT6MDIForm
+			loop {
+				WinGetText,Str,A
+				Haystack := Str
+				Needle := "銷貨單"
+				Atr := InStr(Haystack, Needle)
+				if (Atr = 1) {
+					break
+				}
+				else {
+					ToolTip, 重新開啟銷單畫面中....., 900, 300
+					WinGetText,Str,A
+					Haystack := Str
+					Needle := "功能快捷視窗"
+					Atr := InStr(Haystack, Needle)
+					while not (Atr = 1) {
+						Sleep, 100
+						Send, {F12}
+						Sleep, 100
+						break
+					}
+					WinGetText,Str,A
+					Haystack := Str
+					Needle := "銷貨單"
+					Atr1 := InStr(Haystack, Needle)
+					while not (Atr1 = 1) {
+						Sleep, 100
+						Send, {F10}l11
+						break
+					}
+				}
 			}
 			continue
 		}
@@ -1475,7 +1506,7 @@ Label_未產生發票銷退:
 			Sleep, 100
 			ControlFocus, Edit30, ahk_class ThunderRT6MDIForm
 			ControlSetText , Edit30,, ahk_class ThunderRT6MDIForm
-			Control, EditPaste, 未產生發票, Edit30, ahk_class ThunderRT6MDIForm
+			Control, EditPaste, 未產生發票 銷%inputO%, Edit30, ahk_class ThunderRT6MDIForm
 			ToolTip, 載入完成, 900, 300
 			break
 		}
@@ -1507,25 +1538,36 @@ gocancel:
 					break
 				}
 			}
-			ToolTip, 重新開啟銷退單中....., 900, 300
-			WinGetText, Str, A
-			Haystack := Str
-			Needle := "功能快捷視窗"
-			Atr := InStr(Haystack, Needle)
-			while not (Atr = 1) {
-				Sleep, 100
-				Send, {F12}
-				Sleep, 100
-				break
-			}
-			WinGetText, Str, A
-			Haystack := Str
-			Needle := "銷貨退回單"
-			Atr1 := InStr(Haystack, Needle)
-			while not (Atr1 = 1) {
-				Sleep, 100
-				Send, {F10}l12
-				break
+			ToolTip, 確認銷退單視窗中..., 900, 300
+			WinActivate ahk_class ThunderRT6MDIForm
+			WinWait, ahk_class ThunderRT6MDIForm
+			loop {
+				WinGetText, Str, A
+				if (SubStr(Str, 1, 5) = "銷貨退回單") {
+					break
+				}
+				else {
+					ToolTip, 重新開啟銷退單中....., 900, 300
+					WinGetText, Str, A
+					Haystack := Str
+					Needle := "功能快捷視窗"
+					Atr := InStr(Haystack, Needle)
+					while not (Atr = 1) {
+						Sleep, 100
+						Send, {F12}
+						Sleep, 100
+						break
+					}
+					WinGetText, Str, A
+					Haystack := Str
+					Needle := "銷貨退回單"
+					Atr1 := InStr(Haystack, Needle)
+					while not (Atr1 = 1) {
+						Sleep, 100
+						Send, {F10}l12
+						break
+					}
+				}
 			}
 		}
 	}
@@ -1612,7 +1654,7 @@ Label_拋單:
 	WinWait, ahk_class ThunderRT6FormDC
 	
 	Loop {
-		Sleep, 100
+		Sleep, 1000
 		WinGetText, OutputVar , ahk_class ThunderRT6FormDC
 		control = %OutputVar%
 		if (control != 產生單據日期) {
@@ -1715,25 +1757,35 @@ gostock:
 					break
 				}
 			}
-			ToolTip, 重新開啟倉庫調撥單中....., 900, 300
-			WinGetText, Str, A
-			Haystack := Str
-			Needle := "功能快捷視窗"
-			Atr := InStr(Haystack, Needle)
-			while not (Atr = 1) {
-				Sleep, 100
-				Send, {F12}
-				Sleep, 100
-				break
-			}
-			WinGetText, Str, A
-			Haystack := Str
-			Needle := "倉庫調撥單"
-			Atr1 := InStr(Haystack, Needle)
-			while not (Atr1 = 1) {
-				Sleep, 100
-				Send, {F10}l1E
-				break
+			WinActivate ahk_class ThunderRT6MDIForm
+			WinWait, ahk_class ThunderRT6MDIForm
+			loop {
+				WinGetText, Str, A
+				if (SubStr(Str, 1, 5) = "倉庫調撥單") {
+					break
+				}
+				else {
+					ToolTip, 重新開啟倉庫調撥單中....., 900, 300
+					WinGetText, Str, A
+					Haystack := Str
+					Needle := "功能快捷視窗"
+					Atr := InStr(Haystack, Needle)
+					while not (Atr = 1) {
+						Sleep, 100
+						Send, {F12}
+						Sleep, 100
+						break
+					}
+					WinGetText, Str, A
+					Haystack := Str
+					Needle := "倉庫調撥單"
+					Atr1 := InStr(Haystack, Needle)
+					while not (Atr1 = 1) {
+						Sleep, 100
+						Send, {F10}l1E
+						break
+					}
+				}
 			}
 		}
 	}
@@ -1802,13 +1854,14 @@ Label_拋補單:
 	}
 	
 	WinWait, ahk_class ThunderRT6FormDC
-
+	
 	Loop {
-		Sleep, 100
+		Sleep, 1000
+
 		WinGetText, OutputVar , ahk_class ThunderRT6FormDC, 產生單據日期
 		control = %OutputVar%
 		if (control != 產生單據日期) {
-			Sleep, 1000
+			Sleep, 100
 			SetControlDelay -1
 			ControlClick, Edit5, ahk_class ThunderRT6FormDC,,,, NA
 			Sleep, 100
